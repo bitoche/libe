@@ -22,6 +22,7 @@ public class Bookshelf {
     int shelfId;
     String shelfName;
     @ManyToOne
+    @ToString.Exclude
     Cabinet cabinet;
     @Nullable
     @OneToMany

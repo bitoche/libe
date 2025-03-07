@@ -1,5 +1,6 @@
 package ru.miit.libe.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.OnDelete;
@@ -23,6 +24,7 @@ public class Cabinet {
     String cabinetName;
     @OneToMany
     @ToString.Exclude
+    @JsonIgnore
     //@OnDelete(action = OnDeleteAction.SET_NULL)
     List<Bookshelf> shelves;
 }

@@ -35,5 +35,6 @@ build/
 ### credintals ###
 .env
 
+*.log
 .log
 .log.*.gz

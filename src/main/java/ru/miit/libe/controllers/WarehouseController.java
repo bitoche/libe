@@ -11,7 +11,7 @@ import ru.miit.libe.services.WarehouseService;
 @Controller
 @RestController
 @RequestMapping("/api/adm/warehouse")
-@Tag(name = "Управление выдачей книг, заказами, и т.д.")
+@Tag(name = "Управление выдачей книг, заказами, и т.д. // perm::librarian/admin")
 @CrossOrigin("http://localhost:3000/")
 public class WarehouseController {
     private final MainBookService mainBookService;

@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.transaction.Transactional;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -25,7 +26,7 @@ import java.util.List;
 @Controller
 @RestController
 @RequestMapping("/api/adm")
-@Tag(name = "Управление книгами, и т.п.")
+@Tag(name = "Управление книгами, и т.п. // perm:librarian")
 @CrossOrigin("http://localhost:3000/")
 public class LibrarianController {
     private final MainBookService mainBookService;
@@ -50,7 +51,6 @@ public class LibrarianController {
         this.publishingHouseRepository = publishingHouseRepository;
         this.bookStatusRepository = bookStatusRepository;
     }
-    //getall
 
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Успешное получен список статусов книг"),
@@ -138,43 +138,11 @@ public class LibrarianController {
             bookShelfRepository.findById(bookshelfId).ifPresent(book::setBookshelf);
         }
         Book createdBook = mainBookService.addBook(book);
-
-//        // обновляем связи
-//        for (long authorId : authorIds){
-//            bookAuthorRepository.findById(authorId)
-//                    .ifPresent(bookAuthor -> bookAuthorRepository
-//                                    .save(bookAuthor.addBook(createdBook)));
-//        }
-//        for (int genreId : genreIds){
-//            bookGenreRepository.findById(genreId).ifPresent(
-//                    bookGenre -> bookGenreRepository
-//                                    .save(bookGenre.addBook(createdBook)));
-//        }
-//        publishingHouseRepository.findById(publishingHouseId).ifPresent(
-//                ph -> publishingHouseRepository
-//                                    .save(ph.addBook(createdBook)));
-//        bookStatusRepository.findById(statusId).ifPresent(
-//                status -> bookStatusRepository
-//                                    .save(status.addBook(createdBook)));
-//        bookLanguageRepository.findById(statusId).ifPresent(
-//                lang -> bookLanguageRepository
-//                        .save(lang.addBook(createdBook)));
         return ResponseEntity.status(HttpStatus.CREATED).body(createdBook);
     }
     @Operation(summary = "Обновить книгу в БД")
     @PutMapping(value = "/updateBook", consumes = MediaType.APPLICATION_JSON_VALUE)
-    // todo переделать на поля вместо сущности
     public ResponseEntity<?> updateBook(@RequestBody @Validated Book book){
-//        book.setBookStatus(mainBookService.castBookStatusNameToBookStatus(
-//                book.getBookStatus()));
-//        book.setLanguage(mainBookService.castBookLanguageNameToBookLanguage(
-//                book.getLanguage().getLanguageName()));
-//        book.setAuthors(mainBookService.castBookAutorIdentifiersToBookAutors(
-//                book.getAuthorIdentifiers()));
-//        book.setPublishingHouses(mainBookService.castBookPublishingHouseWOIdToPublishingHouses(
-//                book.getPublishingHouses()));
-//        book.setGenres(mainBookService.castBookGenresWOIdToBookGenres(
-//                book.getGenres()));
         Book updatedBook = mainBookService.updateBook(book);
         return ResponseEntity.status(200).body(updatedBook);
     }
@@ -184,10 +152,12 @@ public class LibrarianController {
             @ApiResponse(responseCode = "200", description = "Успешно сохранен новый статус книги"),
             @ApiResponse(responseCode = "444", description = "Такой статус книги уже существует (bookStatus.name)")
     })
-    public ResponseEntity<?> addBookStatus(@RequestBody @Validated BookStatus bookStatus){
-        var resp = mainBookService.addBookStatus(bookStatus);
+    public ResponseEntity<?> addBookStatus(@RequestParam @NotNull String bookStatusName){
+        var bs = new BookStatus();
+        bs.setStatusName(bookStatusName);
+        var resp = mainBookService.addBookStatus(bs);
         return resp!=null
-                ? ResponseEntity.ok(bookStatus)
+                ? ResponseEntity.ok(bs)
                 : ResponseEntity.status(444).body("Такой статус книги уже существует (bookStatus.name)");
     }
     @Operation(summary = "Добавить жанр книги в БД")
@@ -196,10 +166,12 @@ public class LibrarianController {
             @ApiResponse(responseCode = "200", description = "Успешно сохранен новый жанр книги"),
             @ApiResponse(responseCode = "444", description = "Такой жанр книги уже существует (bookGenre.name)")
     })
-    public ResponseEntity<?> addBookStatus(@RequestBody @Validated BookGenre bookGenre){
-        var resp = mainBookService.addBookGenre(bookGenre);
+    public ResponseEntity<?> addBookGenre(@RequestParam @NotNull String bookGenreName){
+        var bg = new BookGenre();
+        bg.setGenreName(bookGenreName);
+        var resp = mainBookService.addBookGenre(bg);
         return resp!=null
-                ? ResponseEntity.ok(bookGenre)
+                ? ResponseEntity.ok(bg)
                 : ResponseEntity.status(444).body("Такой жанр книги уже существует (bookStatus.name)");
     }
     @Operation(summary = "Добавить издателя в БД")

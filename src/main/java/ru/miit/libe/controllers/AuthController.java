@@ -24,7 +24,7 @@ import java.util.Map;
 @Controller
 @RestController
 @RequestMapping("/auth")
-@Tag(name = "Управление входом, аутентификацией, регистрацией")
+@Tag(name = "Управление входом, аутентификацией, регистрацией // perm:all")
 @CrossOrigin("http://localhost:3000/")
 public class AuthController {
     private static final Logger logger = LoggerFactory.getLogger("Main");
@@ -88,38 +88,38 @@ public class AuthController {
         response.put("available", !userService.existsByUsername(email));
         return response;
     }
+// todo для проверки springSecurity
+//    @GetMapping("/check-adm-privileges")
+//    public ResponseEntity<?> checkAdmPriv(){
+//        return ResponseEntity.ok("У вас есть привелении администратора");
+//    }
+//    @GetMapping("/check-teacher-privileges")
+//    public ResponseEntity<?> checkTeacherPriv(){
+//        return ResponseEntity.ok("У вас есть привелении преподавателя");
+//    }
+//    @GetMapping("/check-dev-privileges")
+//    public ResponseEntity<?> checkDevPriv(){
+//        return ResponseEntity.ok("У вас есть привелении разработчика");
+//    }
 
-    @GetMapping("/check-adm-privileges")
-    public ResponseEntity<?> checkAdmPriv(){
-        return ResponseEntity.ok("У вас есть привелении администратора");
-    }
-    @GetMapping("/check-teacher-privileges")
-    public ResponseEntity<?> checkTeacherPriv(){
-        return ResponseEntity.ok("У вас есть привелении преподавателя");
-    }
-    @GetMapping("/check-dev-privileges")
-    public ResponseEntity<?> checkDevPriv(){
-        return ResponseEntity.ok("У вас есть привелении разработчика");
-    }
+//    @Operation(
+//            summary = "Выход из системы",
+//            description = "Завершает текущую сессию пользователя",
+//            responses = {
+//                    @ApiResponse(responseCode = "200", description = "Успешный выход"),
+//                    @ApiResponse(responseCode = "401", description = "Пользователь не аутентифицирован")
+//            }
+//    )
+//    @PostMapping("/logout")
+//    public ResponseEntity<?> logout() {
+//        // Этот метод теперь не нужен, так как выход обрабатывается Spring Security
+//        return ResponseEntity.ok("Выход обрабатывается Spring Security");
+//    }
 
-    @Operation(
-            summary = "Выход из системы",
-            description = "Завершает текущую сессию пользователя",
-            responses = {
-                    @ApiResponse(responseCode = "200", description = "Успешный выход"),
-                    @ApiResponse(responseCode = "401", description = "Пользователь не аутентифицирован")
-            }
-    )
-    @PostMapping("/logout")
-    public ResponseEntity<?> logout() {
-        // Этот метод теперь не нужен, так как выход обрабатывается Spring Security
-        return ResponseEntity.ok("Выход обрабатывается Spring Security");
-    }
-
-    @GetMapping("/login") // переадресация на страницу входа
-    public ResponseEntity<?> login(){
-        return ResponseEntity.ok("*todo переход на страницу входа*"); // todo сделать переход на страницу входа
-    }
+//    @GetMapping("/login") // переадресация на страницу входа
+//    public ResponseEntity<?> login(){
+//        return ResponseEntity.ok("*todo переход на страницу входа*"); // todo сделать переход на страницу входа
+//    }
     @Operation(summary = "Ввод entryCode !ПОСЛЕ РЕГИСТРАЦИИ!, требует логин и пароль пользователя")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Учетная запись подтверждена"),
@@ -150,6 +150,7 @@ public class AuthController {
         return resp ? ResponseEntity.ok().body("Все ок") : ResponseEntity.badRequest().body("Что-то неверное.");
     }
 
+    // проверка авторизации пользователя
     @Operation(summary = "test me")
     @GetMapping("/testme")
     public ResponseEntity<?> testme(){

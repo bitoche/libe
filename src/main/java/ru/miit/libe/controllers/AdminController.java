@@ -9,20 +9,33 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import ru.miit.libe.dtos.CreateUserRequest;
 import ru.miit.libe.models.User;
 import ru.miit.libe.models.UserRole;
+import ru.miit.libe.services.SAVETYPE;
 import ru.miit.libe.services.UserService;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Controller
 @RestController
 @RequestMapping("/api/super")
-@Tag(name = "Управление ролями, созданием пользователей и т.д.")
+@Tag(name = "Управление ролями, созданием пользователей и т.д. // perm:admin")
 @CrossOrigin("http://localhost:3000/")
-public class SuperAdminController {
+public class AdminController {
     private final UserService userService;
 
-    public SuperAdminController(UserService userService) {
+    public AdminController(UserService userService) {
         this.userService = userService;
+    }
+
+    @Operation(summary = "Добавляет нового пользователя")
+    @PostMapping("/createUser")
+    public ResponseEntity<?> createUser(@RequestBody CreateUserRequest user){
+        return userService.save(user, SAVETYPE.WITH_ROLE_INCLUDED)
+                ? ResponseEntity.ok().body("Успешно создан пользователь с email = "+ user.getEmail())
+                : ResponseEntity.badRequest().build();
     }
 
     @Operation(summary = "Изменить данные пользователя (пароль хешируется после выполнения)")
@@ -37,6 +50,7 @@ public class SuperAdminController {
                 ? ResponseEntity.ok(user)
                 : ResponseEntity.status(444).build();
     }
+
     @Operation(summary = "Добавляет новую роль пользователя")
     @PostMapping("/createUserRole")
     public ResponseEntity<UserRole> createUserRole(@RequestParam String roleName){
@@ -47,7 +61,7 @@ public class SuperAdminController {
         return ResponseEntity.badRequest().build();
     }
 
-    @Operation(summary = "Удаляет пользователя по ID (без подтверждения) // perm: admin // now:all")
+    @Operation(summary = "Удаляет пользователя по ID (без подтверждения)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "404", description = "Пользователь не найден"),
             @ApiResponse(responseCode = "200", description = "Пользователь удален"),

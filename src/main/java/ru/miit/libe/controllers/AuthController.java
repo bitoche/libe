@@ -30,8 +30,6 @@ public class AuthController {
     private static final Logger logger = LoggerFactory.getLogger("Main");
 
     private final UserService userService;
-    //@Autowired
-    //private AuthenticationManager authenticationManager;
 
     private org.springframework.security.core.userdetails.UserDetails getUserDetails(){
         // Получаем объект аутентификации
@@ -148,17 +146,6 @@ public class AuthController {
     @Operation(summary = "Вход в аккаунт")
     @PostMapping("/loginProcessing")
     public ResponseEntity<?> login(@NotNull String email, @NotNull String password, @NotNull String entryCode){
-//        try {
-//            Authentication authentication = authenticationManager.authenticate(
-//                    new UsernamePasswordAuthenticationToken(email, password, Collections.emptyList())
-//            );
-//
-//            SecurityContextHolder.getContext().setAuthentication(authentication);
-//
-//            return ResponseEntity.ok().body("Login successful");
-//        } catch (AuthenticationException e) {
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Login failed");
-//        }
         var resp = userService.loginWithOneTimeCode(email, password, entryCode);
         return resp ? ResponseEntity.ok().body("Все ок") : ResponseEntity.badRequest().body("Что-то неверное.");
     }

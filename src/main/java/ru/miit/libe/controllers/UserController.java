@@ -32,7 +32,6 @@ public class UserController {
     public ResponseEntity<?> getAll(){
         //заменим полученных пользователей на userDTO, для того чтобы в роли не находились пользователи
         var allUsers = userService.getAll();
-        //new UserDTO(user));
         List<User> resp = new ArrayList<>(allUsers);
         return ResponseEntity.ok(resp);
     }
@@ -42,7 +41,7 @@ public class UserController {
         var allRoles = userService.getAllUserRoles();
         List<UserRole> resp = new ArrayList<>();
         for (UserRole role : allRoles) {
-            resp.add(role);//new RoleDTO(role));
+            resp.add(role);
         }
         return ResponseEntity.ok(resp);
     }
@@ -58,7 +57,7 @@ public class UserController {
     public ResponseEntity<?> getUserById(@PathVariable Long userId){
         var resp = userService.getById(userId);
         if (resp != null){
-            var resp1 = resp;//new UserDTO(resp);
+            var resp1 = resp;
             return ResponseEntity.ok(resp1);
         }
         else{

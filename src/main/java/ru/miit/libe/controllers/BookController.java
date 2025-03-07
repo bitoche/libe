@@ -35,44 +35,6 @@ public class BookController {
         this.bookRepository = bookRepository;
         this.mainBookService = mainBookService;
     }
-//    private ResponseEntity<?> bookRespToBookDTO(List<Book> books){
-//        if (books!=null && !books.isEmpty()){
-//            List<BookDTO> resp1 = new ArrayList<>();
-//            for (Book b : books){
-//                resp1.add(new BookDTO(b));
-//            }
-//            return ResponseEntity.status(200).body(resp1);
-//        }
-//        return ResponseEntity.status(201).build();
-//    }
-//    private MinBookDTO convertToDTO(Book book) {
-//        MinBookDTO dto = new MinBookDTO();
-//        dto.setBookId(book.getBookId());
-//        dto.setBookName(book.getBookName());
-//        dto.setReleaseDate(book.getReleaseDate());
-//        dto.setPagesNumber(book.getPagesNumber());
-//        dto.setDescription(book.getDescription());
-//        dto.setIdentifier(book.getIdentifier());
-//
-//        dto.setAuthorNames(book.getAuthors().stream()
-//                .map(BookAuthor::getFullName)
-//                .collect(Collectors.toSet()));
-//
-//        dto.setGenreNames(book.getGenres().stream()
-//                .map(BookGenre::getGenreName)
-//                .collect(Collectors.toSet()));
-//
-//        dto.setPublishingHouseNames(book.getPublishingHouses().stream()
-//                .map(PublishingHouse::getPublishingHouseName)
-//                .collect(Collectors.toSet()));
-//        if (book.getLanguage() != null){
-//            dto.setLanguageName(book.getLanguage().getLanguageName());
-//        }
-//        if(book.getBookStatus() != null){
-//            dto.setBookStatusName(book.getBookStatus().getStatusName());
-//        }
-//        return dto;
-//    }
 
     @GetMapping("/byName")
     @ApiResponses(value = {
@@ -109,19 +71,8 @@ public class BookController {
             @ApiResponse(responseCode = "201", description = "Запрос выполнен, книг не найдено")
     })
     public List<Book> getBooksByGenre(@RequestParam String genreName){
-        //var resp = bookRepository.findAllByGenres_GenreNameIn(genreName);
         return bookRepository.findAllByGenres_GenreNameIn(Collections.singleton(genreName));
     }
-
-//    @GetMapping("/byBookReleaseYear/{releaseYear}")
-//    @ApiResponses(value = {
-//            @ApiResponse(responseCode = "200", description = "Книги успешно найдены"),
-//            @ApiResponse(responseCode = "201", description = "Запрос выполнен, книг не найдено")
-//    })
-//    public ResponseEntity<?> getBooksByReleaseYear(@PathVariable int releaseYear){
-//        var resp = bookRepository.findBooksByReleaseYearNative(releaseYear);
-//        return bookRespToBookDTO(resp);
-//    }
 
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Успешно получен список книг"),
@@ -131,9 +82,6 @@ public class BookController {
     @GetMapping("/getBooks")
     public ResponseEntity<?> getAllBooks(){
         List<Book> books = mainBookService.getAllBooks();
-//        List<MinBookDTO> bookDTOs = books.stream()
-//                .map(this::convertToDTO)
-//                .collect(Collectors.toList());
         return ResponseEntity.ok(books);
     }
     @ApiResponses(value = {
@@ -144,7 +92,7 @@ public class BookController {
     @GetMapping("/search")
     public ResponseEntity<?> getBooksBySearchRequest(@RequestParam @NotNull String searchRequest){
         var resp = mainBookService.searchBooksFromSearchField(searchRequest);
-        return ResponseEntity.ok().body(resp); //bookRespToBookDTO(resp);
+        return ResponseEntity.ok().body(resp);
     }
 
 }

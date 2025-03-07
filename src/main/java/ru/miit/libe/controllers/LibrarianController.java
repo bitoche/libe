@@ -4,27 +4,51 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.miit.libe.models.*;
+import ru.miit.libe.repository.*;
 import ru.miit.libe.services.MainBookService;
 
 import java.sql.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 @Controller
 @RestController
 @RequestMapping("/api/adm")
 @Tag(name = "Управление книгами, и т.п.")
 @CrossOrigin("http://localhost:3000/")
-public class AdminController {
+public class LibrarianController {
     private final MainBookService mainBookService;
-    public AdminController(MainBookService mainBookService) {
+    @Autowired
+    private final IBookAuthorRepository bookAuthorRepository;
+    @Autowired
+    private final IBookGenreRepository bookGenreRepository;
+    @Autowired
+    private final IBookLanguageRepository bookLanguageRepository;
+    @Autowired
+    private final IBookShelfRepository bookShelfRepository;
+    @Autowired
+    private final IPublishingHouseRepository publishingHouseRepository;
+    @Autowired
+    private final IBookStatusRepository bookStatusRepository;
+    public LibrarianController(MainBookService mainBookService, IBookAuthorRepository bookAuthorRepository, IBookGenreRepository bookGenreRepository, IBookLanguageRepository bookLanguageRepository, IBookShelfRepository bookShelfRepository, IPublishingHouseRepository publishingHouseRepository, IBookStatusRepository bookStatusRepository) {
         this.mainBookService = mainBookService;
+        this.bookAuthorRepository = bookAuthorRepository;
+        this.bookGenreRepository = bookGenreRepository;
+        this.bookLanguageRepository = bookLanguageRepository;
+        this.bookShelfRepository = bookShelfRepository;
+        this.publishingHouseRepository = publishingHouseRepository;
+        this.bookStatusRepository = bookStatusRepository;
     }
     //getall
 
@@ -80,23 +104,66 @@ public class AdminController {
 
     //add
     @Operation(summary = "Добавить новую книгу в БД")
-    @PostMapping(value = "/addBook", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> addBook(@RequestBody @Validated Book book){
-//        book.setBookStatus(mainBookService.castBookStatusNameToBookStatus(
-//                book.getBookStatus()));
-//        book.setLanguage(mainBookService.castBookLanguageNameToBookLanguage(
-//                book.getLanguage().getLanguageName()));
-//        book.setAuthors(mainBookService.castBookAutorIdentifiersToBookAutors(
-//                book.getAuthorIdentifiers()));
-//        book.setPublishingHouses(mainBookService.castBookPublishingHouseWOIdToPublishingHouses(
-//                book.getPublishingHouses()));
-//        book.setGenres(mainBookService.castBookGenresWOIdToBookGenres(
-//                book.getGenres()));
+    @PostMapping(value = "/addBook")
+    @Transactional
+    public ResponseEntity<?> addBook(@RequestParam String bookName,
+                                     @RequestParam String bookDescription,
+                                     @RequestParam int pagesNumber,
+                                     @RequestParam Date releaseDate,
+                                     @RequestParam String identifier,
+                                     @RequestParam int statusId,
+                                     @RequestParam Long publishingHouseId,
+                                     @RequestParam List<Long> authorIds,
+                                     @RequestParam List<Integer> genreIds,
+                                     @RequestParam int languageId,
+                                     @RequestParam @Nullable Integer bookshelfId){//@RequestBody @Validated Book book){
+        Book book = new Book();
+        book.setBookName(bookName);
+        book.setDescription(bookDescription);
+        book.setPagesNumber(pagesNumber);
+        book.setReleaseDate(releaseDate);
+        book.setIdentifier(identifier);
+        bookStatusRepository.findByBookStatusId(statusId).ifPresent(book::setBookStatus);
+        publishingHouseRepository.findById(publishingHouseId).ifPresent(book::setPublishingHouse);
+        book.setAuthors(new ArrayList<>());
+        for (long authorId : authorIds){
+            bookAuthorRepository.findById(authorId).ifPresent(book::addAuthor);
+        }
+        book.setGenres(new ArrayList<>());
+        for (int genreId : genreIds){
+            bookGenreRepository.findById(genreId).ifPresent(book::addGenre);
+        }
+        bookLanguageRepository.findById(languageId).ifPresent(book::setLanguage);
+        if (bookshelfId != null){
+            bookShelfRepository.findById(bookshelfId).ifPresent(book::setBookshelf);
+        }
         Book createdBook = mainBookService.addBook(book);
+
+//        // обновляем связи
+//        for (long authorId : authorIds){
+//            bookAuthorRepository.findById(authorId)
+//                    .ifPresent(bookAuthor -> bookAuthorRepository
+//                                    .save(bookAuthor.addBook(createdBook)));
+//        }
+//        for (int genreId : genreIds){
+//            bookGenreRepository.findById(genreId).ifPresent(
+//                    bookGenre -> bookGenreRepository
+//                                    .save(bookGenre.addBook(createdBook)));
+//        }
+//        publishingHouseRepository.findById(publishingHouseId).ifPresent(
+//                ph -> publishingHouseRepository
+//                                    .save(ph.addBook(createdBook)));
+//        bookStatusRepository.findById(statusId).ifPresent(
+//                status -> bookStatusRepository
+//                                    .save(status.addBook(createdBook)));
+//        bookLanguageRepository.findById(statusId).ifPresent(
+//                lang -> bookLanguageRepository
+//                        .save(lang.addBook(createdBook)));
         return ResponseEntity.status(HttpStatus.CREATED).body(createdBook);
     }
     @Operation(summary = "Обновить книгу в БД")
     @PutMapping(value = "/updateBook", consumes = MediaType.APPLICATION_JSON_VALUE)
+    // todo переделать на поля вместо сущности
     public ResponseEntity<?> updateBook(@RequestBody @Validated Book book){
 //        book.setBookStatus(mainBookService.castBookStatusNameToBookStatus(
 //                book.getBookStatus()));
@@ -147,7 +214,7 @@ public class AdminController {
         var resp = mainBookService.addPublishingHouse(publishingHouse);
         return resp!=null
                 ? ResponseEntity.ok(publishingHouse)
-                : ResponseEntity.status(444).body("Такой жанр книги уже существует (bookStatus.name)");
+                : ResponseEntity.status(444).body("Такой издатель уже существует (publishingHouse.name)");
     }
     @Operation(summary = "Добавить автора в БД")
     @PostMapping("/addBookAuthor")

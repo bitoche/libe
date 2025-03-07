@@ -9,4 +9,5 @@ import java.util.Optional;
 @Repository
 public interface IBookStatusRepository extends JpaRepository<BookStatus, Integer> {
     boolean existsByStatusName(String statusName);
+    Optional<BookStatus> findByBookStatusId(int statusId);
 }

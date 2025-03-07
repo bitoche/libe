@@ -24,8 +24,8 @@ public class UserRole implements GrantedAuthority {
     public String getAuthority(){
         return "ROLE_"+getRoleName();
     }
-    @OneToMany
-    @ToString.Exclude
-    //@OnDelete(action = OnDeleteAction.SET_NULL)
-    List<User> usersWithThisRole;
+//    @OneToMany
+//    @ToString.Exclude
+//    //@OnDelete(action = OnDeleteAction.SET_NULL)
+//    List<User> usersWithThisRole;
 }

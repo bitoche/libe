@@ -6,6 +6,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.proxy.HibernateProxy;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -29,10 +30,9 @@ public class Book {
     @ManyToOne
     @OnDelete(action = OnDeleteAction.SET_NULL)
     BookStatus bookStatus;
-    @ManyToMany
-    @ToString.Exclude
+    @ManyToOne
     @OnDelete(action = OnDeleteAction.SET_NULL)
-    List<PublishingHouse> publishingHouses;
+    PublishingHouse publishingHouse;
     @ManyToMany
     @ToString.Exclude
     @OnDelete(action = OnDeleteAction.SET_NULL)
@@ -48,4 +48,19 @@ public class Book {
     @ManyToOne
     @OnDelete(action = OnDeleteAction.SET_NULL)
     Bookshelf bookshelf;
+
+
+    public void addAuthor(BookAuthor a){
+        if(authors==null){
+            authors=new ArrayList<>();
+        }
+        authors.add(a);
+    }
+
+    public void addGenre(BookGenre g){
+        if(genres==null){
+            genres=new ArrayList<>();
+        }
+        genres.add(g);
+    }
 }

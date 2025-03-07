@@ -89,7 +89,7 @@ public class WarehouseController {
         return resp!=null ? ResponseEntity.ok().body(resp) : ResponseEntity.badRequest().body("Полка не переименована.");
     }
 
-    @Operation(summary = "Переместить существующую полку в шкаф // dont work ???")
+    @Operation(summary = "Переместить существующую полку в шкаф")
     @PostMapping("/replaceShelf")
     public ResponseEntity<?> replaceShelf(int shelfId, int cabinetId, boolean forceFlag){
         warehouseService.assignExistShelfToExistCabinet(shelfId, cabinetId, forceFlag);

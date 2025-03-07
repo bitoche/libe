@@ -1,5 +1,6 @@
 package ru.miit.libe.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import lombok.*;
@@ -30,6 +31,7 @@ public class User {
     Date birthDate;
     @Column(unique = true)
     String email;
+    @JsonIgnore
     String password;
     @ManyToOne
     @OnDelete(action = OnDeleteAction.SET_NULL)

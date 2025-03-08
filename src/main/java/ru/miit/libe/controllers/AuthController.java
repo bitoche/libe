@@ -59,11 +59,14 @@ public class AuthController {
             @RequestParam @Nullable Date birthDate,
             @RequestParam String email,
             @RequestParam String password){
+        if(userService.existsByUsername(email)){
+            return ResponseEntity.badRequest().body("email "+email+" already taken");
+        }
         CreateUserRequest user = new CreateUserRequest();
         if(!userService.existsByRoleName("DEACTIVATED")){
             userService.saveUserRole("DEACTIVATED");
         } // если роли DEACTIVATED не существует - создаем
-        user.setRoleName("DEACTIVATED"); // делаем учетку неактивированной, дальше todo привязать логику деактивированной учетки
+        user.setRoleName("DEACTIVATED"); // делаем учетку неактивированной
         // здесь должен вызываться метод создания кода для входа,
         // с помощью которого будет осуществляться подтверждение учетной записи
         // этот код должен быть длиннее, чем при обычном входе в аккаунт.
@@ -77,7 +80,7 @@ public class AuthController {
         if (birthDate!=null){
             user.setBirthDate(birthDate);
         }
-        return userService.save(user, SAVETYPE.STANDARD_REGISTER) ? ResponseEntity.ok(user) : ResponseEntity.badRequest().body("Error in registering. Perhaps, username exists.");
+        return ResponseEntity.ok(userService.save(user, SAVETYPE.STANDARD_REGISTER));
     }
 
 
@@ -146,8 +149,7 @@ public class AuthController {
     @Operation(summary = "Вход в аккаунт")
     @PostMapping("/loginProcessing")
     public ResponseEntity<?> login(@NotNull String email, @NotNull String password, @NotNull String entryCode){
-        var resp = userService.loginWithOneTimeCode(email, password, entryCode);
-        return resp ? ResponseEntity.ok().body("Все ок") : ResponseEntity.badRequest().body("Что-то неверное.");
+        return ResponseEntity.ok().body(userService.loginWithOneTimeCode(email, password, entryCode));
     }
 
     // проверка авторизации пользователя

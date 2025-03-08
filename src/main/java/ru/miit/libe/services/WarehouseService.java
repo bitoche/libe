@@ -145,8 +145,8 @@ public class WarehouseService {
             }
         }
     }
-    @Transactional
-    public void removeBookFromShelf(long bookId, int shelfId){
+
+    public Bookshelf removeBookFromShelf(long bookId, int shelfId){
         var b = bookRepository.findById(bookId);
         var s = bookShelfRepository.findById(shelfId);
         if (b.isPresent() && s.isPresent()){
@@ -156,10 +156,12 @@ public class WarehouseService {
                 bsh.remove(b.get());
                 sh.setBooks(bsh);
                 bookShelfRepository.save(sh);
+                return sh;
             }
             else System.out.println("shelf "+s.get().getShelfId()+" not contains book "+b.get().getBookId());
         }
         else System.out.println("Not defined bookId/shelfId");
+        return null;
     }
 
     @Transactional
@@ -215,7 +217,6 @@ public class WarehouseService {
         return null;
     }
 
-    @Transactional
     public Bookshelf renameShelf(int shelfId, String newName){
         var s = bookShelfRepository.findById(shelfId);
         if (s.isPresent()){
@@ -228,4 +229,24 @@ public class WarehouseService {
         return null;
     }
 
+    @Transactional
+    public Cabinet deleteCabinet(int cabinetId, boolean forceFlag) {
+        var c = cabinetRepository.findById(cabinetId);
+        if (c.isPresent()){
+            var cab = c.get();
+            if(forceFlag){
+                var shelves = cab.getShelves();
+                if(shelves != null && !shelves.isEmpty()){
+                    for(Bookshelf shelf : shelves){
+                        bookShelfRepository.delete(shelf);
+                    }
+                }
+            }
+            cab.setShelves(null);
+            cabinetRepository.save(cab);
+            cabinetRepository.delete(cab);
+            return cab;
+        }
+        return null;
+    }
 }

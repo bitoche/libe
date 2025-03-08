@@ -33,9 +33,7 @@ public class AdminController {
     @Operation(summary = "Добавляет нового пользователя")
     @PostMapping("/createUser")
     public ResponseEntity<?> createUser(@RequestBody CreateUserRequest user){
-        return userService.save(user, SAVETYPE.WITH_ROLE_INCLUDED)
-                ? ResponseEntity.ok().body("Успешно создан пользователь с email = "+ user.getEmail())
-                : ResponseEntity.badRequest().build();
+        return ResponseEntity.ok().body(userService.save(user, SAVETYPE.WITH_ROLE_INCLUDED));
     }
 
     @Operation(summary = "Изменить данные пользователя (пароль хешируется после выполнения)")
@@ -46,19 +44,19 @@ public class AdminController {
                                            @Parameter(description = "ID пользователя", required = true)
                                            @RequestParam Long userId){
         user.setUserId(userId); // обновим конкретного
-        return userService.update(user)
+        return userService.update(user) != null
                 ? ResponseEntity.ok(user)
                 : ResponseEntity.status(444).build();
     }
 
     @Operation(summary = "Добавляет новую роль пользователя")
     @PostMapping("/createUserRole")
-    public ResponseEntity<UserRole> createUserRole(@RequestParam String roleName){
+    public ResponseEntity<?> createUserRole(@RequestParam String roleName){
         var resp = userService.saveUserRole(roleName);
         if (resp != null){
             return ResponseEntity.ok(resp);
         }
-        return ResponseEntity.badRequest().build();
+        return ResponseEntity.badRequest().body("role " + roleName +" already exists");
     }
 
     @Operation(summary = "Удаляет пользователя по ID (без подтверждения)")

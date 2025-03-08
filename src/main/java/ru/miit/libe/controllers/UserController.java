@@ -19,7 +19,7 @@ import java.util.List;
 @Controller
 @RestController
 @RequestMapping("/api/user")
-@Tag(name = "Управление пользователями и ролями // perm:all", description = "Позволяет управлять пользователями и ролями")
+@Tag(name = "Контроллер для обычного пользователя // perm:all", description = "Позволяет смотреть пользователей и роли")
 @CrossOrigin("http://localhost:3000/")
 public class UserController {
     private final UserService userService;

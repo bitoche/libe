@@ -42,6 +42,9 @@ public class UserService {
     }
 
     public UserRole saveUserRole(String roleName) {
+        if(userRoleRepository.existsUserRoleByRoleName(roleName)){
+            return null;
+        }
         var newRole = new UserRole();
         newRole.setRoleName(roleName);
         return userRoleRepository.save(newRole);
@@ -124,29 +127,7 @@ public class UserService {
         return null;
     }
 
-//todo delete if unused
-
-//    @Transactional
-//    public EntryCode createEntryCodeWithSQL(EntryCode entryCode) {
-//        String userSql = "SELECT user_id FROM public.\"user\" WHERE email = ?";
-//        Long userId = jdbcTemplate.queryForObject(userSql, Long.class, entryCode.getUser().getEmail());
-//
-//        if (userId == null) {
-//            throw new IllegalArgumentException("User with email " + entryCode.getUser().getEmail() + " does not exist");
-//        }
-//
-//        String entryCodeSql = "INSERT INTO public.entry_code (code, expire_dttm, \"user\") VALUES (?, ?, ?) RETURNING code_id";
-//        Long entryCodeId = jdbcTemplate.queryForObject(entryCodeSql, Long.class,
-//                entryCode.getCode(),
-//                entryCode.getExpireDateTime(),
-//                userId);
-//
-//        entryCode.setCodeId(entryCodeId);
-//        return entryCode;
-//    }
-
-    @Transactional
-    public boolean save(CreateUserRequest user, SAVETYPE saveType) {
+    public User save(CreateUserRequest user, SAVETYPE saveType) {
         var obj = new User();
         obj.setEmail(user.getEmail());
         obj.setPassword(user.getPassword());
@@ -157,7 +138,7 @@ public class UserService {
         obj.setEmail(user.getEmail());
 
         if (userRepository.findAppUserByEmail(obj.getEmail()).isPresent()) {
-            return false;
+            return null;
         }
 
         if (saveType == SAVETYPE.WITH_ROLE_INCLUDED) {
@@ -179,17 +160,17 @@ public class UserService {
             createEntryCode(firstEntryCode);
             sendEnterCodeToEmail(firstEntryCode, true);
         }
-        return true;
+        return obj;
     }
 
-    public boolean update(User obj) {
+    public User update(User obj) {
         if (userRepository.findAppUserByEmail(obj.getEmail()).isEmpty()) {
-            return false;
+            return null;
         }
         PasswordEncoder pe = new BCryptPasswordEncoder();
         obj.setPassword(pe.encode(obj.getPassword()));
         userRepository.save(obj);
-        return true;
+        return obj;
     }
 
     public boolean addRoleUpdate(User user) {
@@ -250,11 +231,11 @@ public class UserService {
         return ResponseEntity.ok().body("Одноразовый код уже был отправлен");
     }
 
-    public Boolean loginWithOneTimeCode(String email, String password, String code) {
+    public User loginWithOneTimeCode(String email, String password, String code) {
         // Проверяем, существует ли пользователь
         Optional<User> userOptional = userRepository.findAppUserByEmail(email);
         if (userOptional.isEmpty()) {
-            return false;
+            return null;
         }
 
         User user = userOptional.get();
@@ -262,19 +243,19 @@ public class UserService {
         // Проверяем пароль
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         if (!passwordEncoder.matches(password, user.getPassword())) {
-            return false;
+            return null;
         }
 
         // Проверяем код
         EntryCode entryCode = entryCodeRepository.findByUserAndCode(user, code);
         if (entryCode == null || entryCode.getExpireDateTime().isBefore(LocalDateTime.now())) {
-            return false;
+            return null;
         }
 
         // Удаляем использованный код
         entryCodeRepository.delete(entryCode);
 
         // Возвращаем успешный ответ
-        return true;
+        return user;
     }
 }

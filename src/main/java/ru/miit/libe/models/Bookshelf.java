@@ -23,6 +23,7 @@ public class Bookshelf {
     String shelfName;
     @ManyToOne
     @ToString.Exclude
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     Cabinet cabinet;
     @Nullable
     @OneToMany

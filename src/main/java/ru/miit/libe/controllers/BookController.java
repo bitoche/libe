@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 @Controller
 @RestController
 @RequestMapping("/api/book")
-@Tag(name = "Юзер-контроллер книг", description = "Позволяет найти нужную книгу по автору, идентификатору, и т.д.")
+@Tag(name = "Юзер-контроллер книг // perm:all", description = "Позволяет найти нужную книгу по автору, идентификатору, и т.д.")
 @CrossOrigin("http://localhost:3000/")
 public class BookController {
     @Autowired
@@ -59,10 +59,7 @@ public class BookController {
             @ApiResponse(responseCode = "201", description = "Запрос выполнен, книг не найдено")
     })
     public ResponseEntity<?> getBooksByIdentifier(@RequestParam String fullIdentifier){
-        var resp = bookRepository.findByIdentifier(fullIdentifier);
-        return resp!=null
-                ? ResponseEntity.status(200).body(resp)
-                : ResponseEntity.status(201).build();
+        return ResponseEntity.status(200).body(bookRepository.findByIdentifier(fullIdentifier));
     }
 
     @GetMapping("/byBookGenre")
@@ -81,8 +78,7 @@ public class BookController {
     @Operation(summary = "Позволяет получить список книг из БД")
     @GetMapping("/getBooks")
     public ResponseEntity<?> getAllBooks(){
-        List<Book> books = mainBookService.getAllBooks();
-        return ResponseEntity.ok(books);
+        return ResponseEntity.ok(mainBookService.getAllBooks());
     }
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Успешное получен список книг"),
@@ -91,8 +87,7 @@ public class BookController {
     @Operation(summary = "Позволяет книг (по полю название, год выпуска, идентификатор книги, идентификатор автора, и жанр)")
     @GetMapping("/search")
     public ResponseEntity<?> getBooksBySearchRequest(@RequestParam @NotNull String searchRequest){
-        var resp = mainBookService.searchBooksFromSearchField(searchRequest);
-        return ResponseEntity.ok().body(resp);
+        return ResponseEntity.ok().body(mainBookService.searchBooksFromSearchField(searchRequest));
     }
 
 }

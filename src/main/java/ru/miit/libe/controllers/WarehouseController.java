@@ -11,41 +11,30 @@ import ru.miit.libe.services.WarehouseService;
 @Controller
 @RestController
 @RequestMapping("/api/adm/warehouse")
-@Tag(name = "Управление выдачей книг, заказами, и т.д. // perm::librarian/admin")
+@Tag(name = "Управление выдачей книг, заказами, и т.д. // perm::librarian")
 @CrossOrigin("http://localhost:3000/")
 public class WarehouseController {
-    private final MainBookService mainBookService;
     private final WarehouseService warehouseService;
-    public WarehouseController(MainBookService mainBookService, WarehouseService warehouseService) {
-        this.mainBookService = mainBookService;
+    public WarehouseController(WarehouseService warehouseService) {
         this.warehouseService = warehouseService;
     }
 
     @Operation(summary = "Получить все книжные шкафы")
     @GetMapping("/")
     public ResponseEntity<?> getAllCabinets(){
-        var allCabinets = warehouseService.getAllCabinets();
-        return allCabinets !=null
-                ? ResponseEntity.ok(allCabinets)
-                : ResponseEntity.status(499).body("Не найдено ни одного шкафа");
+        return ResponseEntity.ok(warehouseService.getAllCabinets());
     }
 
     @Operation(summary = "Получить все полки по id шкафа")
     @GetMapping("/{cabinetId}")
     public ResponseEntity<?> getAllShelvesByCabinet(@PathVariable int cabinetId){
-        var allShelves = warehouseService.getAllBookshelvesByCabinet(cabinetId);
-        return allShelves !=null
-                ? ResponseEntity.ok(allShelves)
-                : ResponseEntity.status(499).body("Не найдено ни одной полки для этого шкафа");
+        return ResponseEntity.ok(warehouseService.getAllBookshelvesByCabinet(cabinetId));
     }
 
     @Operation(summary = "Получить все книги по id полки")
     @GetMapping("/s/{shelfId}")
     public ResponseEntity<?> getAllBooksByShelfId(@PathVariable int shelfId){
-        var allBooks = warehouseService.getAllBooksByShelfId(shelfId);
-        return allBooks !=null
-                ? ResponseEntity.ok(allBooks)
-                : ResponseEntity.status(499).body("Не найдено ни одной книги для этой полки");
+        return ResponseEntity.ok(warehouseService.getAllBooksByShelfId(shelfId));
     }
 
     @Operation(summary = "Добавить новый шкаф")
@@ -53,40 +42,37 @@ public class WarehouseController {
     public ResponseEntity<?> createNewCabinet(@RequestParam int shelvesCount,
                                               @RequestParam String cabinetName,
                                               @RequestParam int cabinetNumber){
-        var createdCabinet = warehouseService.createNewCabinet(shelvesCount, cabinetName, cabinetNumber);
-        return createdCabinet !=null
-                ? ResponseEntity.ok(createdCabinet)
-                : ResponseEntity.status(499).body("Шкаф не создан.");
+        return ResponseEntity.ok(warehouseService.createNewCabinet(shelvesCount, cabinetName, cabinetNumber));
+    }
+
+    @Operation(summary = "Удалить шкаф")
+    @PostMapping("/deleteCabinet")
+    public ResponseEntity<?> deleteCabinet(@RequestParam int cabinetId,
+                                           @RequestParam boolean deleteInnerShelves){
+        return ResponseEntity.ok(warehouseService.deleteCabinet(cabinetId, deleteInnerShelves));
     }
 
     @Operation(summary = "Убрать полку из шкафа (не удаляет полку целиком)")
     @PostMapping("/removeShelfFromCabinet")
     public ResponseEntity<?> removeShelfFromCabinet(@RequestParam int shelfId){
-        var removedShelf = warehouseService.removeShelfFromCabinet(shelfId);
-        return removedShelf !=null
-                ? ResponseEntity.ok(removedShelf)
-                : ResponseEntity.status(499).body("Полка не убрана из шкафа.");
+        return ResponseEntity.ok(warehouseService.removeShelfFromCabinet(shelfId));
     }
 
     @Operation(summary = "Удалить полку целиком")
     @PostMapping("/removeShelfFully")
     public ResponseEntity<?> removeShelfFully(@RequestParam int shelfId){
-        var deletedShelf = warehouseService.deleteShelf(shelfId);
-        return deletedShelf !=null
-                ? ResponseEntity.ok(deletedShelf)
-                : ResponseEntity.status(499).body("Полка не удалена.");
+        return ResponseEntity.ok(warehouseService.deleteShelf(shelfId));
     }
     @Operation(summary = "Получить все полки не в шкафах")
     @GetMapping("/getShelvesWOCabinet")
     public ResponseEntity<?> getShelvesWOCabinet(){
-        var resp = warehouseService.getAllBookshelvesByCabinet(-1);
-        return !resp.isEmpty() ? ResponseEntity.ok().body(resp) : ResponseEntity.badRequest().body("Нет полок не в шкафах");
+        return ResponseEntity.ok().body(warehouseService.getAllBookshelvesByCabinet(-1));
     }
+
     @Operation(summary = "Переименовать полку")
     @PostMapping("/renameShelf")
     public ResponseEntity<?> renameShelf(int shelfId, String newName){
-        var resp = warehouseService.renameShelf(shelfId, newName);
-        return resp!=null ? ResponseEntity.ok().body(resp) : ResponseEntity.badRequest().body("Полка не переименована.");
+        return ResponseEntity.ok().body(warehouseService.renameShelf(shelfId, newName));
     }
 
     @Operation(summary = "Переместить существующую полку в шкаф")
@@ -99,7 +85,14 @@ public class WarehouseController {
     @Operation(summary = "Добавить книгу на полку")
     @PostMapping("/addBookToShelf")
     public ResponseEntity<?> addBookToShelf(int bookId, int shelfId){
-        var resp = warehouseService.setBookToBookshelf(bookId, shelfId);
-        return resp!=null ? ResponseEntity.ok().body(resp) : ResponseEntity.badRequest().body("Полка не обновлена.");
+        return ResponseEntity.ok().body(warehouseService.setBookToBookshelf(bookId, shelfId));
     }
+
+    @Operation(summary = "Убрать книгу с полки")
+    @PostMapping("/removeBookFromBookshelf")
+    public ResponseEntity<?> removeBookFromShelf(int bookId, int shelfId){
+        return ResponseEntity.ok().body(warehouseService.removeBookFromShelf(bookId, shelfId));
+    }
+
+    // заказ книг perm:librarian
 }

@@ -19,7 +19,7 @@ public class AppUserDetails implements UserDetails {
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
         var role = user.getRole();
         if(!(user.getRole() == null)){
-            authorities.add(new SimpleGrantedAuthority(role.getRoleName()));
+            authorities.add(new SimpleGrantedAuthority(role.name()));
         }
 
         return authorities;

@@ -13,6 +13,7 @@ import java.util.Objects;
 @Setter
 @ToString
 @RequiredArgsConstructor
+@Deprecated
 public class BorrowStatus {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

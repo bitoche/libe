@@ -14,7 +14,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import ru.miit.libe.dtos.CreateUserRequest;
-import ru.miit.libe.services.SAVETYPE;
+import ru.miit.libe.models.EUserRole;
+import ru.miit.libe.models.SAVETYPE;
 import ru.miit.libe.services.UserService;
 
 import java.sql.Date;
@@ -30,6 +31,7 @@ public class AuthController {
     private static final Logger logger = LoggerFactory.getLogger("Main");
 
     private final UserService userService;
+    private final ResponseService rs;
 
     private org.springframework.security.core.userdetails.UserDetails getUserDetails(){
         // Получаем объект аутентификации
@@ -46,8 +48,9 @@ public class AuthController {
         }
     }
 
-    public AuthController(UserService userService) {
+    public AuthController(UserService userService, ResponseService rs) {
         this.userService = userService;
+        this.rs=rs;
     }
 
     @PostMapping("/register")
@@ -63,13 +66,7 @@ public class AuthController {
             return ResponseEntity.badRequest().body("email "+email+" already taken");
         }
         CreateUserRequest user = new CreateUserRequest();
-        if(!userService.existsByRoleName("DEACTIVATED")){
-            userService.saveUserRole("DEACTIVATED");
-        } // если роли DEACTIVATED не существует - создаем
-        user.setRoleName("DEACTIVATED"); // делаем учетку неактивированной
-        // здесь должен вызываться метод создания кода для входа,
-        // с помощью которого будет осуществляться подтверждение учетной записи
-        // этот код должен быть длиннее, чем при обычном входе в аккаунт.
+        user.setRole(EUserRole.DEACTIVATED); // делаем учетку неактивированной
         user.setPassword(password);
         user.setEmail(email);
         user.setFirstName(firstName);
@@ -80,7 +77,7 @@ public class AuthController {
         if (birthDate!=null){
             user.setBirthDate(birthDate);
         }
-        return ResponseEntity.ok(userService.save(user, SAVETYPE.STANDARD_REGISTER));
+        return rs.build(userService.save(user, SAVETYPE.STANDARD_REGISTER));
     }
 
 
@@ -92,6 +89,7 @@ public class AuthController {
         return response;
     }
 // todo для проверки springSecurity
+
 //    @GetMapping("/check-adm-privileges")
 //    public ResponseEntity<?> checkAdmPriv(){
 //        return ResponseEntity.ok("У вас есть привелении администратора");
@@ -121,7 +119,7 @@ public class AuthController {
 
 //    @GetMapping("/login") // переадресация на страницу входа
 //    public ResponseEntity<?> login(){
-//        return ResponseEntity.ok("*todo переход на страницу входа*"); // todo сделать переход на страницу входа
+//        return ResponseEntity.ok("*переход на страницу входа*");
 //    }
     @Operation(summary = "Ввод entryCode !ПОСЛЕ РЕГИСТРАЦИИ!, требует логин и пароль пользователя")
     @ApiResponses(value = {
@@ -149,7 +147,7 @@ public class AuthController {
     @Operation(summary = "Вход в аккаунт")
     @PostMapping("/loginProcessing")
     public ResponseEntity<?> login(@NotNull String email, @NotNull String password, @NotNull String entryCode){
-        return ResponseEntity.ok().body(userService.loginWithOneTimeCode(email, password, entryCode));
+        return rs.build(userService.loginWithOneTimeCode(email, password, entryCode));
     }
 
     // проверка авторизации пользователя

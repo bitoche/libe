@@ -22,6 +22,9 @@ public class PublishingHouse {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     long publishingHouseId;
     String publishingHouseName;
+    public String toString(){
+        return publishingHouseName;
+    }
 //    @ManyToMany
 //    @ToString.Exclude
 //    @JsonIgnore

@@ -8,16 +8,19 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import ru.miit.libe.repository.*;
 import ru.miit.libe.models.*;
+import ru.miit.libe.services.CRUD.CRUDBookService;
 
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class MainBookService {
     @Autowired
     IBookRepository bookRepository;
-    @Autowired
-    IBookStatusRepository bookStatusRepository;
+//    @Autowired
+//    IBookStatusRepository bookStatusRepository;
     @Autowired
     IBookGenreRepository bookGenreRepository;
     @Autowired
@@ -26,26 +29,29 @@ public class MainBookService {
     IBookAuthorRepository bookAuthorRepository;
     @Autowired
     IBookLanguageRepository bookLanguageRepository;
+    CRUDBookService cbs;
 
     public MainBookService(IBookAuthorRepository bookAuthorRepository,
                            IPublishingHouseRepository publishingHouseRepository,
                            IBookRepository bookRepository,
-                           IBookStatusRepository bookStatusRepository,
+                           //IBookStatusRepository bookStatusRepository,
                            IBookGenreRepository bookGenreRepository,
-                           IBookLanguageRepository bookLanguageRepository) {
+                           IBookLanguageRepository bookLanguageRepository,
+                           CRUDBookService cbs) {
         this.bookRepository = bookRepository;
-        this.bookStatusRepository = bookStatusRepository;
+        //this.bookStatusRepository = bookStatusRepository;
         this.bookGenreRepository = bookGenreRepository;
         this.publishingHouseRepository = publishingHouseRepository;
         this.bookAuthorRepository = bookAuthorRepository;
         this.bookLanguageRepository = bookLanguageRepository;
+        this.cbs = cbs;
     }
 
     public List<Book> getAllBooks(){
-        return bookRepository.findAll();
+        return cbs.getAll();
     }
-    public List<BookStatus> getAllBookStatuses(){
-        return bookStatusRepository.findAll();
+    public List<EBookStatus> getAllBookStatuses(){
+        return List.of(EBookStatus.values());
     }
     public List<BookGenre> getAllBookGenres(){
         return bookGenreRepository.findAll();
@@ -60,40 +66,32 @@ public class MainBookService {
         return bookLanguageRepository.findAll();
     }
     public List<Book> searchBooksFromSearchField(String searchRequest){
-        List<Book> resp = new ArrayList<>();
-        List<String> searchRequestParts = Arrays.stream(searchRequest.split(" ")).toList();
+        Map<Book, Integer> resp = new HashMap<>(); // Book - key, Integer - matches_count
+        List<String> searchRequestParts = Arrays.stream(searchRequest.split(" "))
+                .filter(part -> part.length() >= 3)
+                .toList();
+        var allBooks = cbs.getAll();
         for (String partOfRequest
                 : searchRequestParts){
-            var byGenre = bookRepository.findAllByGenres_GenreNameIn(Collections.singleton(partOfRequest));
-            var byAuthorIdentifier = bookRepository.findAllByAuthors_IdentifierIn(Collections.singleton(partOfRequest));
-            var byName = bookRepository.findAllByBookNameContains(partOfRequest);
-            var byIdentifier = bookRepository.findAllByAuthors_IdentifierIn(Collections.singleton(partOfRequest));
-            if(!byIdentifier.isEmpty()){
-                resp.addAll(byIdentifier);
-            }
-            if (!byName.isEmpty()){
-                resp.addAll(byName);
-            }
-            if(!byGenre.isEmpty()){
-                resp.addAll(byGenre);
-            }
-            if(!byAuthorIdentifier.isEmpty()){
-                resp.addAll(byAuthorIdentifier);
+            for (Book book: allBooks){
+                if(book.toString().toLowerCase().contains(partOfRequest.toLowerCase())){
+                    if(!resp.containsKey(book)){
+                        resp.put(book, 1);
+                    }
+                    else resp.put(book, resp.get(book)+1);
+                }
             }
         }
-        return resp;
+        // sort
+        return resp.entrySet().stream()
+                .sorted(Map.Entry.<Book, Integer>comparingByValue().reversed()) // Сортировка по убыванию
+                .map(Map.Entry::getKey) // Преобразование в список книг
+                .distinct() // Удаление дубликатов (если вдруг)
+                .collect(Collectors.toList());
     }
 
     public Book addBook(@NotNull Book book){
-        bookRepository.save(book);
-        return book;
-    }
-
-    public BookStatus addBookStatus(@NotNull BookStatus bookStatus){
-        if (!bookStatusRepository.existsByStatusName(bookStatus.getStatusName())){
-            return bookStatusRepository.save(bookStatus);
-        }
-        return null;
+        return cbs.saveBook(book);
     }
     public BookGenre addBookGenre(@NotNull BookGenre bookGenre){
         if (!bookGenreRepository.existsByGenreName(bookGenre.getGenreName())){
@@ -121,19 +119,15 @@ public class MainBookService {
     }
 
     public Book deleteBookByIdentifier(String identifier) {
-        if (bookRepository.existsByIdentifier(identifier)) {
-            var book = bookRepository.findByIdentifier(identifier);
-            bookRepository.delete(book); // Удалить объект
-            return book;
+        if(bookRepository.existsByIdentifier(identifier)){
+            return cbs.deleteBookById(cbs.getByIdentifier(identifier).getBookId());
         }
         return null;
     }
 
     public Book updateBook(Book updatedBook){
-        if (bookRepository.existsByBookId(updatedBook.getBookId())) {
-            bookRepository.save(updatedBook);
-            return updatedBook;
-        }
-        return null;
+        return cbs.saveBook(updatedBook);
     }
+
+
 }

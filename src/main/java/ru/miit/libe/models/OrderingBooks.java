@@ -26,7 +26,9 @@ public class OrderingBooks {
     @ManyToOne
     @OnDelete(action = OnDeleteAction.SET_NULL)
     User orderedAdministrator;
-    List<String> orderedBooksDetails;
+    @ManyToMany
+    @ToString.Exclude
+    List<InOrderBook> orderedBooks;
     boolean isActive;
     @Nullable
     String comment;

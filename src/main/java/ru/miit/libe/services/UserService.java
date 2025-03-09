@@ -3,8 +3,10 @@ package ru.miit.libe.services;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.lang.Nullable;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -25,33 +27,18 @@ public class UserService {
     @Autowired
     private IUserRepository userRepository;
     @Autowired
-    private IUserRoleRepository userRoleRepository;
-    @Autowired
     private IEntryCodeRepository entryCodeRepository;
     @Autowired
     private EmailService emailService;
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    public List<UserRole> getAllUserRoles() {
-        return userRoleRepository.findAll();
+    public List<EUserRole> getAllUserRoles() {
+        return List.of(EUserRole.values());
     }
 
-    public boolean existsByRoleName(String roleName) {
-        return userRoleRepository.existsUserRoleByRoleName(roleName);
-    }
-
-    public UserRole saveUserRole(String roleName) {
-        if(userRoleRepository.existsUserRoleByRoleName(roleName)){
-            return null;
-        }
-        var newRole = new UserRole();
-        newRole.setRoleName(roleName);
-        return userRoleRepository.save(newRole);
-    }
-
-    public UserRole getUserRoleByRoleName(String roleName) {
-        return userRoleRepository.getUserRoleByRoleName(roleName);
+    public EUserRole getUserRoleByRoleName(String roleName) {
+        return EUserRole.parseString(roleName);
     }
 
     public List<User> getAll() {
@@ -62,7 +49,7 @@ public class UserService {
         return userRepository.findById(id).orElse(null);
     }
 
-
+    @Transactional
     public ResponseEntity<?> checkAccess(String entryCode, String email, String password, boolean isRegister) {
         var currUser = userRepository.findAppUserByEmail(email);
         if (currUser.isPresent() && entryCodeRepository.existsByUser(currUser.get())) {
@@ -77,15 +64,9 @@ public class UserService {
                 PasswordEncoder pe = new BCryptPasswordEncoder();
                 if (pe.matches(password, currUser.get().getPassword())) {
                     entryCodeRepository.delete(currEntryCode);
-                    var enteredUser = currUser.get();
-
-                    // добавление роли "Activated" если ее нет в бд
-                    if (!userRoleRepository.existsUserRoleByRoleName("ACTIVATED")) {
-                        saveUserRole("ACTIVATED");
-                    }
-
-                    // меняю роль пользователя на "Activated"
-                    enteredUser.setRole(userRoleRepository.getUserRoleByRoleName("ACTIVATED"));
+                    var enteredUser = userRepository.getUserByUserId(currUser.get().getUserId());
+                    // меняю роль пользователя на "AUTHORIZED"
+                    enteredUser.setRole(EUserRole.AUTHORIZED);
                     userRepository.save(enteredUser);
                     return ResponseEntity.status(200).body(enteredUser);
                 } else {
@@ -96,7 +77,7 @@ public class UserService {
             }
         } else {
             if (currUser.isPresent()) {
-                if (currUser.get().getRole().equals(userRoleRepository.getUserRoleByRoleName("ACTIVATED"))) {
+                if (currUser.get().getRole().equals(EUserRole.AUTHORIZED)) {
                     // если пользователь уже активирован возвращаем 202 - ок
                     return ResponseEntity.status(202).build();
                 }
@@ -137,16 +118,16 @@ public class UserService {
         obj.setThirdName(user.getThirdName());
         obj.setEmail(user.getEmail());
 
-        if (userRepository.findAppUserByEmail(obj.getEmail()).isPresent()) {
+        if(!checkUserNotExists(user.getEmail(), null)){
             return null;
         }
 
         if (saveType == SAVETYPE.WITH_ROLE_INCLUDED) {
-            // присваиваем переданные роли
-            obj.setRole(userRoleRepository.getUserRoleByRoleName(user.getRoleName()));
+            // присваиваем переданную роль
+            obj.setRole(user.getRole());
         } else {
             // присваиваем deactivated
-            obj.setRole(userRoleRepository.getUserRoleByRoleName("DEACTIVATED"));
+            obj.setRole(EUserRole.DEACTIVATED);
         }
         PasswordEncoder pe = new BCryptPasswordEncoder();
         obj.setPassword(pe.encode(obj.getPassword()));
@@ -164,7 +145,7 @@ public class UserService {
     }
 
     public User update(User obj) {
-        if (userRepository.findAppUserByEmail(obj.getEmail()).isEmpty()) {
+        if (checkUserNotExists(obj.getEmail(), null)){
             return null;
         }
         PasswordEncoder pe = new BCryptPasswordEncoder();
@@ -180,25 +161,15 @@ public class UserService {
         userRepository.save(user);
         return true;
     }
-//    @Transactional
+
     public User deleteUserById(Long id) {
         // Находим пользователя
-        User deletedUser = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-//        // Удаляем все связанные записи EntryCode
-//        entryCodeRepository.deleteByUser(deletedUser);
-
-        userRepository.deleteById(id);
-        return deletedUser;
-    }
-
-    public ResponseEntity<?> deleteRoleById(Integer userRoleId) {
-        if (userRoleRepository.findById(userRoleId).isPresent()) {
-            userRoleRepository.deleteById(userRoleId);
-            return ResponseEntity.ok("Successful deleting userRole=" + userRoleRepository.findById(userRoleId).get().getRoleName());
+        var deletedUser = userRepository.findById(id);
+        if(deletedUser.isPresent()){
+            userRepository.deleteById(id);
+            return deletedUser.get();
         }
-        return ResponseEntity.notFound().build();
+        return null;
     }
 
     public boolean existsByUsername(String email) {
@@ -211,13 +182,11 @@ public class UserService {
 
     public ResponseEntity<?> getOneTimeCode(String email){
         // Проверяем, существует ли пользователь
-        Optional<User> userOptional = userRepository.findAppUserByEmail(email);
-        if (userOptional.isEmpty()) {
-            return ResponseEntity.status(404).body("Пользователь не найден");
+        if(checkUserNotExists(email, null)){
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("user not found");
         }
-        User user = userOptional.get();
-        // обработка истекшего ec
-        // то есть код есть, но истек
+        User user = getUser(null, email);
+        // код есть, но истек
         if (entryCodeRepository.existsByUser(user) && entryCodeRepository.getEntryCodeByUser_UserId(user.getUserId()).getExpireDateTime().isBefore(LocalDateTime.now())){
             entryCodeRepository.delete(entryCodeRepository.getEntryCodeByUser_UserId(user.getUserId())); // удалили старый код
         }
@@ -230,32 +199,61 @@ public class UserService {
         }
         return ResponseEntity.ok().body("Одноразовый код уже был отправлен");
     }
-
-    public User loginWithOneTimeCode(String email, String password, String code) {
-        // Проверяем, существует ли пользователь
-        Optional<User> userOptional = userRepository.findAppUserByEmail(email);
-        if (userOptional.isEmpty()) {
-            return null;
+    public boolean checkUserNotExists(@Nullable String email, @Nullable Long userId){
+        Optional<User> userOptional = Optional.empty();
+        if (userId != null){
+            userOptional = userRepository.findById(userId);
         }
+        else if (email != null){
+            userOptional = userRepository.findAppUserByEmail(email);
+        }
+        return userOptional.isEmpty();
+    }
 
-        User user = userOptional.get();
-
-        // Проверяем пароль
+    public User getUser(@Nullable Long userId, @Nullable String email){
+        Optional<User> userOptional = Optional.empty();
+        if (userId != null){
+            userOptional = userRepository.findById(userId);
+        }
+        else if (email != null){
+            userOptional = userRepository.findAppUserByEmail(email);
+        }
+        return userOptional.orElseThrow();
+    }
+    public boolean equalPassword(User user, String password){
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        if (!passwordEncoder.matches(password, user.getPassword())) {
-            return null;
+        return passwordEncoder.matches(password, user.getPassword());
+    }
+
+    public boolean checkEntryCode(User user, String code){
+        EntryCode entryCode = entryCodeRepository.findByUserAndCode(user, code);
+        return entryCode != null && !entryCode.getExpireDateTime().isBefore(LocalDateTime.now());
+    }
+
+    public ResponseEntity<?> loginWithOneTimeCode(String email, String password, String code) {
+        // Проверяем, существует ли пользователь
+        if(checkUserNotExists(email, null)){
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).body("user not found");
+        }
+        User user = getUser(null, email);
+        // проверка подтверждена ли учетка
+        if (user.getRole() == EUserRole.DEACTIVATED){
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("user "+user.getUserId()+" deactivated");
+        }
+        // Проверяем пароль
+        if (!equalPassword(user, password)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("password not equals");
         }
 
         // Проверяем код
         EntryCode entryCode = entryCodeRepository.findByUserAndCode(user, code);
-        if (entryCode == null || entryCode.getExpireDateTime().isBefore(LocalDateTime.now())) {
-            return null;
-        }
-
+        if (checkEntryCode(user, code)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("entry code not equals");
+        };
         // Удаляем использованный код
         entryCodeRepository.delete(entryCode);
 
         // Возвращаем успешный ответ
-        return user;
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(user);
     }
 }

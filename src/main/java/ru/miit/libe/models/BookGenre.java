@@ -22,6 +22,9 @@ public class BookGenre {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     int genreId;
     String genreName;
+    public String toString(){
+        return genreName;
+    }
 //    @ManyToMany
 //    @ToString.Exclude
 //    @JsonIgnore

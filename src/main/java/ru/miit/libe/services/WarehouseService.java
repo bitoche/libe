@@ -3,6 +3,8 @@ package ru.miit.libe.services;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import ru.miit.libe.models.*;
@@ -21,6 +23,10 @@ public class WarehouseService {
     ICabinetRepository cabinetRepository;
     @Autowired
     IBookShelfRepository bookShelfRepository;
+    @Autowired
+    IOrderingBooksRepository orderingBooksRepository;
+    @Autowired
+    IInOrderBookRepository inOrderBookRepository;
 
     private final MainBookService mainBookService;
 
@@ -237,9 +243,7 @@ public class WarehouseService {
             if(forceFlag){
                 var shelves = cab.getShelves();
                 if(shelves != null && !shelves.isEmpty()){
-                    for(Bookshelf shelf : shelves){
-                        bookShelfRepository.delete(shelf);
-                    }
+                    shelves.forEach(s -> bookShelfRepository.delete(s));
                 }
             }
             cab.setShelves(null);
@@ -248,5 +252,20 @@ public class WarehouseService {
             return cab;
         }
         return null;
+    }
+
+    @Transactional
+    public OrderingBooks orderBooks(OrderingBooks orderingBooks){
+        var inOrderBooks = orderingBooks.getOrderedBooks();
+        inOrderBooks.forEach(b->inOrderBookRepository.save(b));
+        return orderingBooksRepository.save(orderingBooks);
+    }
+
+    public List<OrderingBooks> getAllOrdersByStatus(boolean orderStatus){
+        return orderingBooksRepository.findAllByIsActive(orderStatus);
+    }
+    public List<InOrderBook> getAllInOrderBooksByOrder(long orderId){
+        return orderingBooksRepository.findById(orderId)
+                .map(OrderingBooks::getOrderedBooks).orElse(null);
     }
 }

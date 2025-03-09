@@ -33,7 +33,5 @@ public class User {
     String email;
     @JsonIgnore
     String password;
-    @ManyToOne
-    @OnDelete(action = OnDeleteAction.SET_NULL)
-    UserRole role;
+    EUserRole role;
 }

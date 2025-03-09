@@ -29,4 +29,5 @@ public class Notification {
     @ManyToOne
     @NotNull
     User user;
+    boolean isChecked;
 }

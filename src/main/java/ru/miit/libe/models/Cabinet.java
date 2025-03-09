@@ -6,6 +6,7 @@ import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.proxy.HibernateProxy;
+import org.springframework.lang.Nullable;
 
 import java.util.List;
 import java.util.Objects;
@@ -27,4 +28,10 @@ public class Cabinet {
     @JsonIgnore
     //@OnDelete(action = OnDeleteAction.SET_NULL)
     List<Bookshelf> shelves;
+    public int getShelvesCount(){
+        if(shelves != null){
+            return this.shelves.size();
+        }
+        return 0;
+    }
 }

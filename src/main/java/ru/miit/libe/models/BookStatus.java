@@ -18,6 +18,7 @@ import java.util.Objects;
 @RequiredArgsConstructor
 @Entity
 @Table(name="book_status")
+@Deprecated
 public class BookStatus {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

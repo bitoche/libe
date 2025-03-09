@@ -20,6 +20,7 @@ import ru.miit.libe.repository.*;
 import ru.miit.libe.services.MainBookService;
 
 import java.sql.Date;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,16 +41,14 @@ public class LibrarianController {
     private final IBookShelfRepository bookShelfRepository;
     @Autowired
     private final IPublishingHouseRepository publishingHouseRepository;
-    @Autowired
-    private final IBookStatusRepository bookStatusRepository;
-    public LibrarianController(MainBookService mainBookService, IBookAuthorRepository bookAuthorRepository, IBookGenreRepository bookGenreRepository, IBookLanguageRepository bookLanguageRepository, IBookShelfRepository bookShelfRepository, IPublishingHouseRepository publishingHouseRepository, IBookStatusRepository bookStatusRepository) {
+
+    public LibrarianController(MainBookService mainBookService, IBookAuthorRepository bookAuthorRepository, IBookGenreRepository bookGenreRepository, IBookLanguageRepository bookLanguageRepository, IBookShelfRepository bookShelfRepository, IPublishingHouseRepository publishingHouseRepository) {
         this.mainBookService = mainBookService;
         this.bookAuthorRepository = bookAuthorRepository;
         this.bookGenreRepository = bookGenreRepository;
         this.bookLanguageRepository = bookLanguageRepository;
         this.bookShelfRepository = bookShelfRepository;
         this.publishingHouseRepository = publishingHouseRepository;
-        this.bookStatusRepository = bookStatusRepository;
     }
 
     @Operation(summary = "Позволяет получить список статусов книг из БД")
@@ -87,7 +86,7 @@ public class LibrarianController {
                                      @RequestParam int pagesNumber,
                                      @RequestParam Date releaseDate,
                                      @RequestParam String identifier,
-                                     @RequestParam int statusId,
+                                     @RequestParam EBookStatus status,
                                      @RequestParam Long publishingHouseId,
                                      @RequestParam List<Long> authorIds,
                                      @RequestParam List<Integer> genreIds,
@@ -99,7 +98,8 @@ public class LibrarianController {
         book.setPagesNumber(pagesNumber);
         book.setReleaseDate(releaseDate);
         book.setIdentifier(identifier);
-        bookStatusRepository.findByBookStatusId(statusId).ifPresent(book::setBookStatus);
+        book.setBookStatus(status);
+        book.setAddDttm(LocalDateTime.now());
         publishingHouseRepository.findById(publishingHouseId).ifPresent(book::setPublishingHouse);
         book.setAuthors(new ArrayList<>());
         for (long authorId : authorIds){
@@ -114,27 +114,16 @@ public class LibrarianController {
             bookShelfRepository.findById(bookshelfId).ifPresent(book::setBookshelf);
         }
         Book createdBook = mainBookService.addBook(book);
-        return ResponseEntity.ok().body(createdBook);
+        return createdBook != null
+                ? ResponseEntity.ok().body(createdBook)
+                : ResponseEntity.badRequest().body("Такой идентификатор книги уже существует (book.identifier)");
     }
     @Operation(summary = "Обновить книгу в БД")
     @PutMapping(value = "/updateBook", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateBook(@RequestBody @Validated Book book){
         return ResponseEntity.ok().body(mainBookService.updateBook(book));
     }
-    @Operation(summary = "Добавить статус книги в БД")
-    @PostMapping("/addBookStatus")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Успешно сохранен новый статус книги"),
-            @ApiResponse(responseCode = "444", description = "Такой статус книги уже существует (bookStatus.name)")
-    })
-    public ResponseEntity<?> addBookStatus(@RequestParam @NotNull String bookStatusName){
-        var bs = new BookStatus();
-        bs.setStatusName(bookStatusName);
-        var resp = mainBookService.addBookStatus(bs);
-        return resp!=null
-                ? ResponseEntity.ok(bs)
-                : ResponseEntity.status(444).body("Такой статус книги уже существует (bookStatus.name)");
-    }
+
     @Operation(summary = "Добавить жанр книги в БД")
     @PostMapping("/addBookGenre")
     @ApiResponses(value = {

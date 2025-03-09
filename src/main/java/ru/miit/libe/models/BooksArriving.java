@@ -20,9 +20,11 @@ public class BooksArriving {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     long arrivingId;
     LocalDateTime arrivingDttm;
-    List<String> arrivedBooksDetails;
+    @ManyToMany
+    @ToString.Exclude
+    List<InOrderBook> arrivedBooks;
     @ManyToMany
     @ToString.Exclude
     @OnDelete(action = OnDeleteAction.SET_NULL)
-    List<OrderingBooks> orderings;
+    List<InOrderBook> orderings;
 }

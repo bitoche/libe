@@ -6,6 +6,7 @@ import ru.miit.libe.models.Book;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface IBookRepository extends JpaRepository<Book, Long> {
@@ -17,9 +18,11 @@ public interface IBookRepository extends JpaRepository<Book, Long> {
 
     List<Book> findAllByBookNameContains(String bookName);
 
-    Book findByIdentifier(String identifier);
+    //Book findByIdentifier(String identifier);
 
     boolean existsByBookId(long bookId);
 
     List<Book> findByBookshelf_ShelfId(long shelfId);
+
+    Optional<Book> findByIdentifier(String identifier);
 }

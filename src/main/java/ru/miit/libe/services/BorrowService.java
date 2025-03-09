@@ -1,6 +1,5 @@
 package ru.miit.libe.services;
 
-import io.micrometer.common.lang.Nullable;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,13 +7,10 @@ import org.springframework.stereotype.Service;
 import ru.miit.libe.models.Borrow;
 import ru.miit.libe.models.EBookStatus;
 import ru.miit.libe.models.EBorrowStatus;
-import ru.miit.libe.repository.IBookRepository;
-import ru.miit.libe.repository.IBorrowRepository;
-import ru.miit.libe.repository.IBorrowStatusRepository;
-import ru.miit.libe.repository.IUserRepository;
+import ru.miit.libe.models.RequestBooks;
+import ru.miit.libe.repository.*;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 
@@ -27,6 +23,10 @@ public class BorrowService {
     IBorrowRepository borrowRepository;
     @Autowired
     IUserRepository userRepository;
+    @Autowired
+    IRequestBooksRepository requestBooksRepository;
+    @Autowired
+    IInOrderBookRepository inOrderBookRepository;
 //    @Autowired
 //    IBorrowStatusRepository borrowStatusRepository;
     MainBookService bookService;
@@ -178,4 +178,51 @@ public class BorrowService {
     public List<Borrow> findBorrowByStatus(EBorrowStatus status){
         return borrowRepository.findAllByBorrowStatus(status);
     }
+
+
+
+    // запрос книг / изменение запроса / дроп
+    public List<RequestBooks> getAllBookRequests(){
+        return requestBooksRepository.findAll();
+    }
+
+    public List<RequestBooks> getRequestBooksByStatus(boolean isActive){
+        return getAllBookRequests().stream().filter(r->r.isActive()==isActive).toList();
+    }
+
+    public RequestBooks getRequestBooksById(long id){
+        return requestBooksRepository.findById(id).orElse(null);
+    }
+    @Transactional
+    public RequestBooks saveNewRequestBooks(RequestBooks requestBooks){
+        var inOrderBooks = requestBooks.getOrderedBooks();
+        inOrderBooks.forEach(b->inOrderBookRepository.save(b));
+        return requestBooksRepository.save(requestBooks);
+    }
+    @Transactional
+    public RequestBooks updateRequestBooks(RequestBooks requestBooks){
+        var newInOrderBooks = requestBooks.getOrderedBooks();
+        var oldInOrderBooks = requestBooksRepository.findById(requestBooks.getRequestId()).get().getOrderedBooks();
+        oldInOrderBooks.forEach(b->inOrderBookRepository.delete(b));
+        newInOrderBooks.forEach(b->inOrderBookRepository.save(b));
+
+        return requestBooksRepository.save(requestBooks);
+    }
+    public RequestBooks updateStatusOfRequestBooks(RequestBooks requestBooks){
+        return requestBooksRepository.save(requestBooks);
+    }
+
+    public List<RequestBooks> getRequestBooksByUserId(long userId){
+        return requestBooksRepository.findAllByRequestedUser_UserId(userId);
+    }
+
+    public RequestBooks dropRequest(long requestId){
+        var r = getRequestBooksById(requestId);
+        if(r != null){
+            requestBooksRepository.deleteById(requestId);
+            return r;
+        }
+        return null;
+    }
+
 }

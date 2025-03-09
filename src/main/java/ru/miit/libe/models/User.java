@@ -8,6 +8,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.proxy.HibernateProxy;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Objects;
 
@@ -34,4 +35,5 @@ public class User {
     @JsonIgnore
     String password;
     EUserRole role;
+    LocalDateTime registerDttm;
 }

@@ -117,7 +117,7 @@ public class UserService {
         obj.setFirstName(user.getFirstName());
         obj.setThirdName(user.getThirdName());
         obj.setEmail(user.getEmail());
-
+        obj.setRegisterDttm(LocalDateTime.now());
         if(!checkUserNotExists(user.getEmail(), null)){
             return null;
         }
@@ -175,7 +175,7 @@ public class UserService {
     public boolean existsByUsername(String email) {
         return userRepository.findAppUserByEmail(email).isPresent();
     }
-
+    public boolean existsById(long id){ return userRepository.existsById(id);}
     public User getUserByUsername(String email) {
         return userRepository.findAppUserByEmail(email).orElse(null);
     }

@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.miit.libe.models.*;
 import ru.miit.libe.repository.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -122,15 +123,21 @@ public class DBFillService {
     }
 
     public void createTestUsers() {
+        long maxId = userRepository.findAll().stream()
+                .mapToLong(User::getUserId) // Преобразуем пользователей в их id (тип long)
+                .max() // Находим максимальное значение
+                .orElse(0);
         for (int i = 0; i < Arrays.stream(EUserRole.values()).count(); i++) {
             var user = new User();
             user.setRole(EUserRole.values()[i]);
-            user.setEmail("testemail"+i+"@test"+i+".test");
+            long currId = i+maxId;
+            user.setEmail("testemail"+currId+"@test"+currId+".test");
             user.setPassword(RandomService.generateRandomSymbols("",10));
             user.setBirthDate(RandomService.generateRandomDate(50));
             user.setFirstName(RandomService.randFrom(RandomService.MALE_NAMES));
             user.setSecondName(RandomService.randFrom(RandomService.MALE_SURNAMES));
             user.setThirdName(RandomService.randFrom(RandomService.MALE_PATRONYMICS));
+            user.setRegisterDttm(LocalDateTime.now());
             userRepository.save(user);
         }
 
@@ -149,7 +156,7 @@ public class DBFillService {
             for (int i = 0; i < cabinetsCount; i++) {
                 Cabinet c = new Cabinet();
                 c.setCabinetNumber(i);
-                c.setCabinetName("Кабинет №" + i);
+                c.setCabinetName("Шкаф №" + i);
                 cabinetRepo.save(c);
                 c.setShelves(new ArrayList<>());
 

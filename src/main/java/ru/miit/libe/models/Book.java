@@ -84,7 +84,7 @@ public class Book {
         Book gen = new Book();
         gen.identifier = RandomService.generateRandomSymbols("book-", 10);
         gen.bookName = RandomService.generateRandomPhrase();
-        gen.description = RandomService.generateRandomPhrase()+"!\n"+RandomService.generateRandomPhrase()+".";
+        gen.description = RandomService.generateRandomPhrase()+"! "+RandomService.generateRandomPhrase()+".";
         gen.releaseDate = RandomService.generateRandomDate(85);
         gen.pagesNumber = RandomService.randBetween(10, 1000);
         gen.bookStatus = EBookStatus.IN_STOCK;

@@ -64,7 +64,7 @@ public class DBFillController {
         return rs.build(true);
     }
 
-    @Operation(summary = "TEST::TODELETE // Заполнить склад тестовыми данными")
+    @Operation(summary = "TEST::TODELETE // Заполнить склад тестовыми данными (РАБОТАЕТ ТОЛЬКО НА ПЕРВЫЙ РАЗ)")
     @GetMapping("/fillWarehouse")
     public ResponseEntity<?> fillWarehouse(){
         dbFillService.fillWarehouse();

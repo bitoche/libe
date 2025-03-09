@@ -68,8 +68,8 @@
 
 ## Роль Student - Студент
 **Доступные функции:**
-- Бронирование книг (`borrow` | связь с ролью `Librarian`)
-- Получение книг (`borrow` | связь с ролью `Librarian`)
+- Бронирование книг (`borrow` | связь с ролью `Librarian`) (`borrow_controller`)
+- ~~Получение книг (`borrow` | связь с ролью `Librarian`) (`borrow_controller`)~~ (**Выдача у `Librarian`**)
 - Авторизация (`auth_controller`)
 - Все функции роли `Authorized`
 

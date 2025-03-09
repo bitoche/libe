@@ -7,6 +7,7 @@ import ru.miit.libe.models.*;
 import ru.miit.libe.repository.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -21,6 +22,13 @@ public class DBFillService {
     IBookAuthorRepository bookAuthorRepository;
     @Autowired
     IBookLanguageRepository bookLanguageRepository;
+    @Autowired
+    IUserRepository userRepository;
+    @Autowired
+    ICabinetRepository cabinetRepo;
+    @Autowired
+    IBookShelfRepository bookShelfRepository;
+
 
     @Transactional
     public List<Book> generateBooks(int count) {
@@ -111,5 +119,61 @@ public class DBFillService {
             inserted.add(l);
         }
         return inserted;
+    }
+
+    public void createTestUsers() {
+        for (int i = 0; i < Arrays.stream(EUserRole.values()).count(); i++) {
+            var user = new User();
+            user.setRole(EUserRole.values()[i]);
+            user.setEmail("testemail"+i+"@test"+i+".test");
+            user.setPassword(RandomService.generateRandomSymbols("",10));
+            user.setBirthDate(RandomService.generateRandomDate(50));
+            user.setFirstName(RandomService.randFrom(RandomService.MALE_NAMES));
+            user.setSecondName(RandomService.randFrom(RandomService.MALE_SURNAMES));
+            user.setThirdName(RandomService.randFrom(RandomService.MALE_PATRONYMICS));
+            userRepository.save(user);
+        }
+
+    }
+
+    public void fillWarehouse() {
+        var ab = bookRepository.findAll();
+        if (!ab.isEmpty()) {
+            int booksForShelf = 3; // Книг на одной полке
+            int shelvesForCabinet = 3; // Полок в одном шкафу
+            int totalBooksPerCabinet = booksForShelf * shelvesForCabinet; // Всего книг в одном шкафу
+            int cabinetsCount = (int) Math.ceil((double) ab.size() / totalBooksPerCabinet); // Количество шкафов
+
+            int bookIndex = 0; // Индекс текущей книги
+
+            for (int i = 0; i < cabinetsCount; i++) {
+                Cabinet c = new Cabinet();
+                c.setCabinetNumber(i);
+                c.setCabinetName("Кабинет №" + i);
+                cabinetRepo.save(c);
+                c.setShelves(new ArrayList<>());
+
+                for (int j = 0; j < shelvesForCabinet; j++) {
+                    Bookshelf bs = new Bookshelf();
+                    bs.setCabinet(c);
+                    bs.setShelfName("Полка №" + j);
+                    bs.setBooks(new ArrayList<>());
+
+                    for (int k = 0; k < booksForShelf; k++) {
+                        if (bookIndex < ab.size()) { // Проверяем, чтобы не выйти за пределы списка
+                            bs.addBook(ab.get(bookIndex));
+                            bookIndex++; // Переходим к следующей книге
+                        } else {
+                            break; // Если книги закончились, выходим из цикла
+                        }
+                    }
+
+                    bookShelfRepository.save(bs);
+                    c.getShelves().add(bs); // Добавляем полку в шкаф
+                }
+
+                cabinetRepo.save(c); // Сохраняем шкаф с полками
+            }
+        }
     }
 }

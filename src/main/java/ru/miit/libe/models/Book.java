@@ -77,7 +77,7 @@ public class Book {
                 publishingHouse.toString(),
                 authors.toString(),
                 genres.toString());
-        return String.join("; \n",parts);
+        return String.join("; ",parts);
     }
 
     public static Book generateWOIdAndDependencies(){

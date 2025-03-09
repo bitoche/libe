@@ -7,6 +7,7 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.proxy.HibernateProxy;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -30,4 +31,11 @@ public class Bookshelf {
     @ToString.Exclude
     //@OnDelete(action = OnDeleteAction.SET_NULL)
     List<Book> books;
+
+    public void addBook(Book book){
+        if(books == null){
+            books = new ArrayList<>();
+        }
+        books.add(book);
+    }
 }

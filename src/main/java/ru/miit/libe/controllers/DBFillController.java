@@ -50,4 +50,24 @@ public class DBFillController {
     public ResponseEntity<?> insertLanguages(){
         return rs.build(dbFillService.insertTestLanguages());
     }
+
+    @Operation(summary = "TEST::TODELETE // Заполнить всю базу тестовыми данными")
+    @GetMapping("/fill")
+    public ResponseEntity<?> fill(){
+        dbFillService.insertTestLanguages();
+        dbFillService.insertTestGenres();
+        dbFillService.generateAuthors(20);
+        dbFillService.generatePhouses(20);
+        dbFillService.generateBooks(20);
+        dbFillService.createTestUsers();
+        dbFillService.fillWarehouse();
+        return rs.build(true);
+    }
+
+    @Operation(summary = "TEST::TODELETE // Заполнить склад тестовыми данными")
+    @GetMapping("/fillWarehouse")
+    public ResponseEntity<?> fillWarehouse(){
+        dbFillService.fillWarehouse();
+        return rs.build(true);
+    }
 }

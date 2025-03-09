@@ -78,7 +78,7 @@ public class WarehouseService {
             var s = shelf.get();
             var c = cabinet.get();
             var cab_shelves = c.getShelves();
-            if(s.getCabinet()!=null){
+            if(s.getCabinet() != null){
                 System.out.println("shelf "+s.getShelfId()+" already in cabinet "+s.getCabinet().getCabinetId());
                 if(forceFlag){
                     s.setCabinet(null);
@@ -172,8 +172,8 @@ public class WarehouseService {
 
     @Transactional
     public List<Book> getAllBooksByShelfId(int shelfId){
-        var b = bookRepository.findByBookshelf_ShelfId(shelfId);
-        return b;
+        return bookShelfRepository.findById(shelfId)
+                .map(Bookshelf::getBooks).orElse(null);
     }
 
     @Transactional

@@ -121,22 +121,22 @@ public class AuthController {
 //    public ResponseEntity<?> login(){
 //        return ResponseEntity.ok("*переход на страницу входа*");
 //    }
-    @Operation(summary = "Ввод entryCode !ПОСЛЕ РЕГИСТРАЦИИ!, требует логин и пароль пользователя")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Учетная запись подтверждена"),
-            @ApiResponse(responseCode = "202", description = "Пользователь уже зарегистрирован"),
-            @ApiResponse(responseCode = "300", description = "Неверный entryCode"),
-            @ApiResponse(responseCode = "301", description = "Пользователя не существует"),
-            @ApiResponse(responseCode = "303", description = "Кода не существовало. Выдан новый entryCode"),
-            @ApiResponse(responseCode = "302", description = "Неверный пароль"),
-            @ApiResponse(responseCode = "310", description = "EntryCode устарел. Выслан новый")
-    })
-    @PostMapping("/codeAfterRegister")
-    public ResponseEntity<?> getAccessToAccount(@RequestParam @NotNull String entryCode,
-                                                @RequestParam @NotNull String email,
-                                                @RequestParam @NotNull String password){
-        return userService.checkAccess(entryCode, email, password, true);
-    }
+//    @Operation(summary = "Ввод entryCode !ПОСЛЕ РЕГИСТРАЦИИ!, требует логин и пароль пользователя")
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "Учетная запись подтверждена"),
+//            @ApiResponse(responseCode = "202", description = "Пользователь уже зарегистрирован"),
+//            @ApiResponse(responseCode = "300", description = "Неверный entryCode"),
+//            @ApiResponse(responseCode = "301", description = "Пользователя не существует"),
+//            @ApiResponse(responseCode = "303", description = "Кода не существовало. Выдан новый entryCode"),
+//            @ApiResponse(responseCode = "302", description = "Неверный пароль"),
+//            @ApiResponse(responseCode = "310", description = "EntryCode устарел. Выслан новый")
+//    })
+//    @PostMapping("/codeAfterRegister")
+//    public ResponseEntity<?> getAccessToAccount(@RequestParam @NotNull String entryCode,
+//                                                @RequestParam @NotNull String email,
+//                                                @RequestParam @NotNull String password){
+//        return userService.checkAccess(entryCode, email, password, true);
+//    }
 
     @Operation(summary = "Получить код для входа в аккаунт")
     @PostMapping("/getOneTimeCode")

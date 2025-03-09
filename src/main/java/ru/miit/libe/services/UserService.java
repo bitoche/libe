@@ -238,7 +238,9 @@ public class UserService {
         User user = getUser(null, email);
         // проверка подтверждена ли учетка
         if (user.getRole() == EUserRole.DEACTIVATED){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("user "+user.getUserId()+" deactivated");
+            // если нет - подтверждаем
+            return checkAccess(code,email,password,true);
+            //return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("user "+user.getUserId()+" deactivated");
         }
         // Проверяем пароль
         if (!equalPassword(user, password)){

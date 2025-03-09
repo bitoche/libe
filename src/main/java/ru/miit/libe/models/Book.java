@@ -48,9 +48,9 @@ public class Book {
     @OnDelete(action = OnDeleteAction.SET_NULL)
     BookLanguage language;
 
-    @ManyToOne
-    @OnDelete(action = OnDeleteAction.SET_NULL)
-    Bookshelf bookshelf;
+//    @ManyToOne
+//    @OnDelete(action = OnDeleteAction.SET_NULL)
+//    Bookshelf bookshelf;
 
     @Timestamp
     LocalDateTime addDttm;

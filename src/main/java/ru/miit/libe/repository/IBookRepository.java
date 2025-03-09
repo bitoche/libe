@@ -22,7 +22,7 @@ public interface IBookRepository extends JpaRepository<Book, Long> {
 
     boolean existsByBookId(long bookId);
 
-    List<Book> findByBookshelf_ShelfId(long shelfId);
+    //List<Book> findByBookshelf_ShelfId(long shelfId);
 
     Optional<Book> findByIdentifier(String identifier);
 }

@@ -81,6 +81,7 @@ public class LibrarianController {
     //add
     @Operation(summary = "Добавить новую книгу в БД")
     @PostMapping(value = "/addBook")
+    @Transactional
     public ResponseEntity<?> addBook(@RequestParam String bookName,
                                      @RequestParam String bookDescription,
                                      @RequestParam int pagesNumber,
@@ -91,7 +92,8 @@ public class LibrarianController {
                                      @RequestParam List<Long> authorIds,
                                      @RequestParam List<Integer> genreIds,
                                      @RequestParam int languageId,
-                                     @RequestParam @Nullable Integer bookshelfId){//@RequestBody @Validated Book book){
+                                     @RequestParam @Nullable Integer bookshelfId
+                                     ){//@RequestBody @Validated Book book){
         Book book = new Book();
         book.setBookName(bookName);
         book.setDescription(bookDescription);
@@ -110,10 +112,15 @@ public class LibrarianController {
             bookGenreRepository.findById(genreId).ifPresent(book::addGenre);
         }
         bookLanguageRepository.findById(languageId).ifPresent(book::setLanguage);
-        if (bookshelfId != null){
-            bookShelfRepository.findById(bookshelfId).ifPresent(book::setBookshelf);
-        }
         Book createdBook = mainBookService.addBook(book);
+        if (bookshelfId != null){
+            var s = bookShelfRepository.findById(bookshelfId).orElse(null);
+            if(s!=null){
+                s.addBook(book);
+                s.setShelfId(s.getShelfId());
+                bookShelfRepository.save(s);
+            }
+        }
         return createdBook != null
                 ? ResponseEntity.ok().body(createdBook)
                 : ResponseEntity.badRequest().body("Такой идентификатор книги уже существует (book.identifier)");

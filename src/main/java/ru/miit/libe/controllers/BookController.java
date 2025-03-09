@@ -1,5 +1,6 @@
 package ru.miit.libe.controllers;
 
+import io.micrometer.common.lang.Nullable;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -81,8 +82,9 @@ public class BookController {
 //    })
     @Operation(summary = "Позволяет получить список книг из БД")
     @GetMapping("/getBooks")
-    public ResponseEntity<?> getAllBooks(){
-        return rs.build(mainBookService.getAllBooks());
+    public ResponseEntity<?> getAllBooks(@Nullable boolean showOnlyCount){
+        var r = mainBookService.getAllBooks();
+        return showOnlyCount ? rs.build((long) r.size()) : rs.build(r);
     }
 //    @ApiResponses(value = {
 //            @ApiResponse(responseCode = "200", description = "Успешное получен список книг"),
@@ -91,8 +93,9 @@ public class BookController {
     @Operation(summary = "Позволяет получить все книги, подходящие под запрос.",
     description = "Ищет по частям запроса подходящие книги по авторам, описанию, названию, и т.д. Может быть улучшен")
     @GetMapping("/search")
-    public ResponseEntity<?> getBooksBySearchRequest(@RequestParam @NotNull @Size(min = 3) String searchRequest){
-        return rs.build(mainBookService.searchBooksFromSearchField(searchRequest));
+    public ResponseEntity<?> getBooksBySearchRequest(@RequestParam @NotNull @Size(min = 3) String searchRequest, @Nullable boolean showOnlyCount){
+        var r = mainBookService.searchBooksFromSearchField(searchRequest);
+        return showOnlyCount ? rs.build((long) r.size()) : rs.build(r);
     }
 
 

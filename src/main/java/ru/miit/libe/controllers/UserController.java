@@ -1,5 +1,6 @@
 package ru.miit.libe.controllers;
 
+import io.micrometer.common.lang.Nullable;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
@@ -33,8 +34,8 @@ public class UserController {
 
     @Operation(summary = "Достает всех пользователей из бд")
     @GetMapping("/getAllUsers")
-    public ResponseEntity<?> getAll(){
-        return rs.build(userService.getAll());
+    public ResponseEntity<?> getAll(@Nullable boolean showOnlyCount){
+        return showOnlyCount ? rs.build(userService.getAll().size()) : rs.build(userService.getAll());
     }
 
     @Operation(summary = "Достает пользователя по его ID")

@@ -2,6 +2,8 @@ package ru.miit.libe.services;
 
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.miit.libe.models.*;
 import ru.miit.libe.repository.*;
@@ -80,13 +82,16 @@ public class DBFillService {
                 "Боевик", "Детектив", "Комедия", "Эротика", "Вымышленная автобиография", "Автобиография",
                 "Каминаут"
         );
-        for (String genreName : genres){
-            BookGenre g = new BookGenre();
-            g.setGenreName(genreName);
-            bookGenreRepository.save(g);
-            inserted.add(g);
+        if (bookGenreRepository.findAll().isEmpty()){
+            for (String genreName : genres){
+                BookGenre g = new BookGenre();
+                g.setGenreName(genreName);
+                bookGenreRepository.save(g);
+                inserted.add(g);
+            }
+            return inserted;
         }
-        return inserted;
+        return null;
     }
 
     public List<BookLanguage> insertTestLanguages() {
@@ -113,13 +118,16 @@ public class DBFillService {
                 "Ελληνικά",        // Греческий
                 "Українська"       // Украинский
         );
-        for (String lang : languages){
-            BookLanguage l = new BookLanguage();
-            l.setLanguageName(lang);
-            bookLanguageRepository.save(l);
-            inserted.add(l);
+        if(bookLanguageRepository.findAll().isEmpty()){
+            for (String lang : languages){
+                BookLanguage l = new BookLanguage();
+                l.setLanguageName(lang);
+                bookLanguageRepository.save(l);
+                inserted.add(l);
+            }
+            return inserted;
         }
-        return inserted;
+        return null;
     }
 
     public void createTestUsers() {
@@ -132,7 +140,8 @@ public class DBFillService {
             user.setRole(EUserRole.values()[i]);
             long currId = i+maxId;
             user.setEmail("testemail"+currId+"@test"+currId+".test");
-            user.setPassword(RandomService.generateRandomSymbols("",10));
+            PasswordEncoder pe = new BCryptPasswordEncoder();
+            user.setPassword(pe.encode(user.getEmail()));
             user.setBirthDate(RandomService.generateRandomDate(50));
             user.setFirstName(RandomService.randFrom(RandomService.MALE_NAMES));
             user.setSecondName(RandomService.randFrom(RandomService.MALE_SURNAMES));

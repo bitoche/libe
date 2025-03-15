@@ -9,7 +9,6 @@ import ru.miit.libe.models.EUserRole;
 import java.sql.Date;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
 public class CreateUserRequest {
     private String firstName;
@@ -21,4 +20,14 @@ public class CreateUserRequest {
     private String email;
     private String password;
     private EUserRole role;
+
+    public CreateUserRequest(String firstName, String secondName, @Nullable String thirdName, @Nullable Date birthDate, String email, String password, EUserRole role) {
+        this.firstName = firstName;
+        this.secondName = secondName;
+        this.thirdName = thirdName;
+        this.birthDate = birthDate;
+        this.email = email;
+        this.password = password;
+        this.role = role;
+    }
 }

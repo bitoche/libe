@@ -1,5 +1,7 @@
 package ru.miit.libe.services;
 
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.miit.libe.dtos.CreateUserRequest;
 import ru.miit.libe.dtos.MailMessageDTO;
+import ru.miit.libe.dtos.UpdateUserRequest;
 import ru.miit.libe.models.*;
 import ru.miit.libe.repository.*;
 
@@ -90,14 +93,14 @@ public class UserService {
         }
     }
 
-    public void sendEnterCodeToEmail(EntryCode ec, boolean isRegister) {
-        var ecmm = new MailMessageDTO(ec, isRegister);
-        SimpleMailMessage mailMessage = new SimpleMailMessage();
-        mailMessage.setFrom(ecmm.getSender());
-        mailMessage.setTo(ecmm.getReceiver());
-        mailMessage.setSubject(ecmm.getMailTitle());
-        mailMessage.setText(ecmm.getTextMessage());
-        emailService.sendEmail(mailMessage);
+    public void sendEnterCodeToEmail(EntryCode ec, boolean isRegister){
+        try{
+            var ecmm = new MailMessageDTO(ec, isRegister);
+            emailService.sendEmail(ecmm.getSender(), ecmm.getReceiver(), ecmm.getMailTitle(), ecmm.getTextMessage());
+        }
+        catch (MessagingException e){
+            throw new RuntimeException(e);
+        }
     }
     public EntryCode createEntryCode(EntryCode entryCode){
         var user = entryCode.getUser();
@@ -144,14 +147,32 @@ public class UserService {
         return obj;
     }
 
-    public User update(User obj) {
-        if (checkUserNotExists(obj.getEmail(), null)){
+    public User update(UpdateUserRequest obj) {
+        if (checkUserNotExists(null,obj.getUserId())){
             return null;
         }
-        PasswordEncoder pe = new BCryptPasswordEncoder();
-        obj.setPassword(pe.encode(obj.getPassword()));
-        userRepository.save(obj);
-        return obj;
+        var user = getUser(obj.getUserId(), null);
+        if(obj.getNewFirstName()!=null){
+            user.setFirstName(obj.getNewFirstName());
+        }
+        if(obj.getNewSecondName()!=null){
+            user.setSecondName(obj.getNewSecondName());
+        }
+        if(obj.getNewThirdName()!=null){
+            user.setThirdName(obj.getNewThirdName());
+        }
+        if(obj.getNewBirthDate()!=null){
+            user.setBirthDate(obj.getNewBirthDate());
+        }
+        if(obj.getNewPassword()!=null){
+            PasswordEncoder pe = new BCryptPasswordEncoder();
+            user.setPassword(pe.encode(obj.getNewPassword()));
+        }
+        if(obj.getNewRole()!=null){
+            user.setRole(obj.getNewRole());
+        }
+        userRepository.save(user);
+        return user;
     }
 
     public boolean addRoleUpdate(User user) {
@@ -225,9 +246,19 @@ public class UserService {
         return passwordEncoder.matches(password, user.getPassword());
     }
 
-    public boolean checkEntryCode(User user, String code){
+    public String checkEntryCode(User user, String code){
+        // codes:
+        // 1 - ok,
+        // 2 - entry code dont exists,
+        // 3 - entry code expired
         EntryCode entryCode = entryCodeRepository.findByUserAndCode(user, code);
-        return entryCode != null && !entryCode.getExpireDateTime().isBefore(LocalDateTime.now());
+        if (entryCode == null){
+            return "entry code doesn't exists";
+        }
+        if (entryCode.getExpireDateTime().isBefore(LocalDateTime.now())){
+            return "entry code expired";
+        }
+        return "ok";
     }
 
     public ResponseEntity<?> loginWithOneTimeCode(String email, String password, String code) {
@@ -249,8 +280,9 @@ public class UserService {
 
         // Проверяем код
         EntryCode entryCode = entryCodeRepository.findByUserAndCode(user, code);
-        if (checkEntryCode(user, code)){
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("entry code not equals");
+        var ec_check = checkEntryCode(user, code);
+        if (!Objects.equals(ec_check, "ok")){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ec_check);
         };
         // Удаляем использованный код
         entryCodeRepository.delete(entryCode);

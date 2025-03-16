@@ -68,7 +68,7 @@ public class Book {
         }
         genres.add(g);
     }
-    public String toString(){
+    public String details(){
         List<String> parts = List.of(
                 bookName,
                 releaseDate.toString(),

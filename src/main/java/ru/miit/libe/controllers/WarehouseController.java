@@ -23,7 +23,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/warehouse")
 @Tag(name = "Управление выдачей книг, заказами, и т.д. // perm::librarian")
-@CrossOrigin("http://localhost:3000/")
+@CrossOrigin({"http://localhost:3000/", "https://bitoche.cloudpub.ru/"})
 public class WarehouseController {
     private final WarehouseService warehouseService;
     private final ResponseService rs;

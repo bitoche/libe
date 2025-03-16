@@ -25,7 +25,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/user")
 @Tag(name = "Контроллер для обычного пользователя // perm:all", description = "Позволяет смотреть пользователей и роли")
-@CrossOrigin("http://localhost:3000/")
+@CrossOrigin({"http://localhost:3000/", "https://bitoche.cloudpub.ru/"})
 @AllArgsConstructor
 public class UserController {
     private final UserService userService;

@@ -26,7 +26,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/auth")
 @Tag(name = "Управление входом, аутентификацией, регистрацией // perm:all")
-@CrossOrigin("http://localhost:3000/")
+@CrossOrigin({"http://localhost:3000/", "https://bitoche.cloudpub.ru/"})
 public class AuthController {
     private static final Logger logger = LoggerFactory.getLogger("Main");
 

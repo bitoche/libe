@@ -16,7 +16,7 @@ import ru.miit.libe.services.DBFillService;
 @RestController
 @RequestMapping("/api/generation")
 @Tag(name = "Заполнение БД тестовыми значениями ")
-@CrossOrigin("http://localhost:3000/")
+@CrossOrigin({"http://localhost:3000/", "https://bitoche.cloudpub.ru/"})
 @AllArgsConstructor
 public class DBFillController {
     private final DBFillService dbFillService;

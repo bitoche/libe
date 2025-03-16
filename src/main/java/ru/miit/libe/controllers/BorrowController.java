@@ -20,7 +20,7 @@ import java.util.Date;
 @RestController
 @RequestMapping("/api/borrow")
 @Tag(name = "Управление запросами на получение, бронированиями книг и т.п. // perm:librarian/student/teacher")
-@CrossOrigin("http://localhost:3000/")
+@CrossOrigin({"http://localhost:3000/", "https://bitoche.cloudpub.ru/"})
 @AllArgsConstructor
 public class BorrowController {
     BorrowService borrowService;
@@ -147,11 +147,15 @@ public class BorrowController {
     @PutMapping("/l/closeRequest/{requestId}")
     public ResponseEntity<?> getAllRequestsByStatus(@PathVariable long requestId){
         var r = borrowService.getRequestBooksById(requestId);
-        if(r!=null){
+        if(r != null){
             r.setRequestId(requestId);
             r.setActive(false);
             rs.build(borrowService.updateStatusOfRequestBooks(r));
         }
-        return rs.build(null);
+        return rs.build("not found");
     }
+
+    // чел забронировал но не забрал
+    // это отмена брони библиотекарем
+
 }

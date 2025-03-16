@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import ru.miit.libe.dtos.CreateUserRequest;
+import ru.miit.libe.dtos.UpdateUserRequest;
 import ru.miit.libe.models.EUserRole;
 import ru.miit.libe.models.User;
 import ru.miit.libe.models.SAVETYPE;
@@ -24,7 +25,7 @@ import java.sql.Date;
 @RestController
 @RequestMapping("/api/super")
 @Tag(name = "Управление ролями, созданием пользователей и т.д. // perm:admin")
-@CrossOrigin("http://localhost:3000/")
+@CrossOrigin({"http://localhost:3000/", "https://bitoche.cloudpub.ru/"})
 public class AdminController {
     private final UserService userService;
     private final ResponseService rs;
@@ -56,11 +57,8 @@ public class AdminController {
     @PutMapping("/changeUser")
     //@ApiResponse(responseCode = "444", description = "Пользователь не найден (UserService)")
     public ResponseEntity<?> updateUser(@RequestBody
-                                           @Valid User user,
-                                           @Parameter(description = "ID пользователя", required = true)
-                                           @RequestParam Long userId){
-        user.setUserId(userId); // обновим конкретного
-        return rs.build(userService.update(user));
+                                        UpdateUserRequest updatedUser){
+        return rs.build(userService.update(updatedUser));
     }
 
     @Operation(summary = "Удаляет пользователя по ID (без подтверждения)")

@@ -21,6 +21,7 @@ import ru.miit.libe.services.MainBookService;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,7 +29,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/book")
 @Tag(name = "Юзер-контроллер книг // perm:all", description = "Позволяет найти нужную книгу по автору, идентификатору, и т.д.")
-@CrossOrigin("http://localhost:3000/")
+@CrossOrigin({"http://localhost:3000/", "https://bitoche.cloudpub.ru/"})
 public class BookController {
     @Autowired
     private final IBookRepository bookRepository;
@@ -55,8 +56,24 @@ public class BookController {
 //            @ApiResponse(responseCode = "200", description = "Книги успешно найдены"),
 //            @ApiResponse(responseCode = "201", description = "Запрос выполнен, книг не найдено")
 //    })
+    @Operation(summary = "Найти книги по идентификатору автора")
     public ResponseEntity<?> getBooksByAuthor(@RequestParam String authorIdentifier){
         return rs.build(bookRepository.findAllByAuthors_IdentifierIn(Collections.singleton(authorIdentifier))) ;
+    }
+    @GetMapping("/byAuthorName")
+    @Operation(summary = "Найти книги по имени/фамилии/отчеству автора")
+    public ResponseEntity<?> getBooksByAuthorName(@RequestParam String authorName){
+        List<Book> resp = new ArrayList<>();
+        for (BookAuthor ba : mainBookService.getAllBookAuthors()){
+            if (ba.getFullName().contains(authorName)){
+                for(Book authoredBook : bookRepository.getBooksByAuthors_AuthorId(ba.getAuthorId())){
+                    if(!resp.contains(authoredBook)){
+                        resp.add(authoredBook);
+                    }
+                }
+            }
+        }
+        return rs.build(resp);
     }
     @GetMapping("/byBookIdentifier")
 //    @ApiResponses(value = {

@@ -28,7 +28,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/adm")
 @Tag(name = "Управление книгами, и т.п. // perm:librarian")
-@CrossOrigin("http://localhost:3000/")
+@CrossOrigin({"http://localhost:3000/", "https://bitoche.cloudpub.ru/"})
 public class LibrarianController {
     private final MainBookService mainBookService;
     @Autowired

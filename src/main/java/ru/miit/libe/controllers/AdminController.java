@@ -2,20 +2,14 @@ package ru.miit.libe.controllers;
 
 import jakarta.annotation.Nullable;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
-import jakarta.validation.Validation;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import ru.miit.libe.dtos.CreateUserRequest;
 import ru.miit.libe.dtos.UpdateUserRequest;
 import ru.miit.libe.models.EUserRole;
-import ru.miit.libe.models.User;
-import ru.miit.libe.models.SAVETYPE;
+import ru.miit.libe.dtos.SAVETYPE;
 import ru.miit.libe.services.UserService;
 
 import java.sql.Date;
@@ -23,7 +17,7 @@ import java.sql.Date;
 
 @Controller
 @RestController
-@RequestMapping("/api/super")
+@RequestMapping("/admin")
 @Tag(name = "Управление ролями, созданием пользователей и т.д. // perm:admin")
 @CrossOrigin({"http://localhost:3000/", "https://bitoche.cloudpub.ru/"})
 public class AdminController {
@@ -35,7 +29,7 @@ public class AdminController {
     }
 
     @Operation(summary = "Добавляет нового пользователя")
-    @PostMapping("/createUser")
+    @PostMapping("/users/create")
     public ResponseEntity<?> createUser(@RequestParam String firstName,
                                         @RequestParam String secondName,
                                         @RequestParam @Nullable String thirdName,
@@ -54,7 +48,7 @@ public class AdminController {
     }
 
     @Operation(summary = "Изменить данные пользователя (пароль хешируется после выполнения)")
-    @PutMapping("/changeUser")
+    @PutMapping("/users/change")
     //@ApiResponse(responseCode = "444", description = "Пользователь не найден (UserService)")
     public ResponseEntity<?> updateUser(@RequestBody
                                         UpdateUserRequest updatedUser){
@@ -66,7 +60,7 @@ public class AdminController {
 //            @ApiResponse(responseCode = "404", description = "Пользователь не найден"),
 //            @ApiResponse(responseCode = "200", description = "Пользователь удален"),
 //    })
-    @DeleteMapping("/deleteUserById")
+    @DeleteMapping("/users/delete")
     public ResponseEntity<?> deleteUserById(@RequestParam Long userId){
         return rs.build(userService.deleteUserById(userId));
     }

@@ -30,6 +30,8 @@ public class WarehouseService {
 
     private final MainBookService mainBookService;
 
+    private final ReportsService reportsService;
+
     public List<Cabinet> getAllCabinets(){
         return cabinetRepository.findAll();
     }
@@ -54,6 +56,7 @@ public class WarehouseService {
                 if(!shelfBooks.contains(book)){
                     shelfBooks.add(book);
                     shelf.setBooks(shelfBooks);
+                    reportsService.addBookToBookshelfAssign(book, shelf, "+");
                     bookShelfRepository.save(shelf);
                 }
                 System.out.println("На полке "+bookShelfId+" уже есть книга "+bookId);
@@ -142,6 +145,7 @@ public class WarehouseService {
                     var shelfBooks = shelf.getBooks();
                     shelfBooks.remove(book);
                     shelf.setBooks(shelfBooks);
+                    reportsService.addBookToBookshelfAssign(book, shelf, "-");
                     bookShelfRepository.save(shelf);
                 }
                 else System.out.println("На полке "+shelf.getShelfId()+" нет книги "+book.getBookName());

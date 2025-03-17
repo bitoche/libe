@@ -21,7 +21,7 @@ import java.util.List;
 
 @Controller
 @RestController
-@RequestMapping("/api/warehouse")
+@RequestMapping("/warehouse")
 @Tag(name = "Управление выдачей книг, заказами, и т.д. // perm::librarian")
 @CrossOrigin({"http://localhost:3000/", "https://bitoche.cloudpub.ru/"})
 public class WarehouseController {
@@ -35,25 +35,25 @@ public class WarehouseController {
     @Autowired
     private final UserService userService;
     @Operation(summary = "Получить все книжные шкафы")
-    @GetMapping("/")
+    @GetMapping("/cabinets/")
     public ResponseEntity<?> getAllCabinets(){
         return rs.build(warehouseService.getAllCabinets());
     }
 
-    @Operation(summary = "Получить все полки по id шкафа")
-    @GetMapping("/{cabinetId}")
+    @Operation(summary = "Получить содержимое шкафа")
+    @GetMapping("/cabinets/{cabinetId}")
     public ResponseEntity<?> getAllShelvesByCabinet(@PathVariable int cabinetId){
         return rs.build(warehouseService.getAllBookshelvesByCabinet(cabinetId));
     }
 
     @Operation(summary = "Получить все книги по id полки")
-    @GetMapping("/s/{shelfId}")
+    @GetMapping("/cabinets/{cabinetId}/shelf/{shelfId}")
     public ResponseEntity<?> getAllBooksByShelfId(@PathVariable int shelfId){
         return rs.build(warehouseService.getAllBooksByShelfId(shelfId));
     }
 
     @Operation(summary = "Добавить новый шкаф")
-    @PostMapping("/createCabinet")
+    @PostMapping("/cabinets/create")
     public ResponseEntity<?> createNewCabinet(@RequestParam int shelvesCount,
                                               @RequestParam String cabinetName,
                                               @RequestParam int cabinetNumber){
@@ -61,58 +61,58 @@ public class WarehouseController {
     }
 
     @Operation(summary = "Удалить шкаф")
-    @PostMapping("/deleteCabinet")
+    @DeleteMapping("/cabinets/delete")
     public ResponseEntity<?> deleteCabinet(@RequestParam int cabinetId,
                                            @RequestParam boolean deleteInnerShelves){
         return rs.build(warehouseService.deleteCabinet(cabinetId, deleteInnerShelves));
     }
 
     @Operation(summary = "Убрать полку из шкафа (не удаляет полку целиком)")
-    @PostMapping("/removeShelfFromCabinet")
-    public ResponseEntity<?> removeShelfFromCabinet(@RequestParam int shelfId){
+    @PatchMapping("/shelves/{shelfId}/remove")
+    public ResponseEntity<?> removeShelfFromCabinet(@PathVariable int shelfId){
         return rs.build(warehouseService.removeShelfFromCabinet(shelfId));
     }
 
     @Operation(summary = "Удалить полку целиком")
-    @PostMapping("/removeShelfFully")
+    @PostMapping("/shelves/{shelfId}/delete")
     public ResponseEntity<?> removeShelfFully(@RequestParam int shelfId){
         return rs.build(warehouseService.deleteShelf(shelfId));
     }
     @Operation(summary = "Получить все полки не в шкафах")
-    @GetMapping("/getShelvesWOCabinet")
+    @GetMapping("/shelves/empty-cabinet")
     public ResponseEntity<?> getShelvesWOCabinet(){
         return rs.build(warehouseService.getAllBookshelvesByCabinet(-1));
     }
 
     @Operation(summary = "Переименовать полку")
-    @PostMapping("/renameShelf")
-    public ResponseEntity<?> renameShelf(int shelfId, String newName){
+    @PostMapping("/shelves/{shelfId}/rename")
+    public ResponseEntity<?> renameShelf(@PathVariable int shelfId, String newName){
         return rs.build(warehouseService.renameShelf(shelfId, newName));
     }
 
     @Operation(summary = "Переместить существующую полку в шкаф")
-    @PostMapping("/replaceShelf")
-    public ResponseEntity<?> replaceShelf(int shelfId, int cabinetId, boolean forceFlag){
+    @PostMapping("/shelves/{shelfId}/move-to/{cabinetId}")
+    public ResponseEntity<?> replaceShelf(@PathVariable int shelfId,@PathVariable int cabinetId, boolean forceFlag){
         warehouseService.assignExistShelfToExistCabinet(shelfId, cabinetId, forceFlag);
         // todo переделать на норм вывод
         return ResponseEntity.ok().body("Полка "+shelfId+ " успешно перемещена в шкаф "+cabinetId);
     }
 
     @Operation(summary = "Добавить книгу на полку")
-    @PostMapping("/addBookToShelf")
-    public ResponseEntity<?> addBookToShelf(int bookId, int shelfId){
+    @PostMapping("/shelves/{shelfId}/add-book/{bookId}")
+    public ResponseEntity<?> addBookToShelf(@PathVariable int bookId,@PathVariable  int shelfId){
         return rs.build(warehouseService.setBookToBookshelf(bookId, shelfId));
     }
 
     @Operation(summary = "Убрать книгу с полки")
-    @PostMapping("/removeBookFromBookshelf")
+    @PostMapping("/shelves/{shelfId}/remove-from-cabinet")
     public ResponseEntity<?> removeBookFromShelf(int bookId, int shelfId){
         return rs.build(warehouseService.removeBookFromShelf(bookId, shelfId));
     }
 
     // Заказ книг (`ordering_books`) и т.п.
     @Operation(summary = "Заказать книги (должна быть привязана логика заказа у поставщика)")
-    @PostMapping("/orderBooks")
+    @PostMapping("/orders/create")
     public ResponseEntity<?> orderBooks(@RequestBody OrderBooksRequest obr
                                         //@RequestParam Date expectedArrivalDate,
                                         //@RequestParam long orderedLibrarianId,
@@ -137,11 +137,11 @@ public class WarehouseController {
         return rs.build(warehouseService.orderBooks(order));
     }
     @Operation(summary = "Получить все заказы по статусу")
-    @GetMapping("/orders")
+    @GetMapping("/orders/search/status")
     public ResponseEntity<?> getOrdersByStatus(@RequestParam boolean isActive){
         return rs.build(warehouseService.getAllOrdersByStatus(isActive));
     }
-    @Operation(summary = "Получить все книги из заказа")
+    @Operation(summary = "Получить содержимое заказа")
     @GetMapping("/orders/{orderId}")
     public ResponseEntity<?> getInOrderBooksByOrder(@PathVariable long orderId){
         return rs.build(warehouseService.getAllInOrderBooksByOrder(orderId));

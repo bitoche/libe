@@ -1,4 +1,4 @@
-package ru.miit.libe.models;
+package ru.miit.libe.dtos;
 
 public enum SAVETYPE {
     WITH_ROLE_INCLUDED,

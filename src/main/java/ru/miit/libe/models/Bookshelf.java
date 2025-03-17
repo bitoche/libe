@@ -26,10 +26,10 @@ public class Bookshelf {
     @ToString.Exclude
     @OnDelete(action = OnDeleteAction.SET_NULL)
     Cabinet cabinet;
+
     @Nullable
     @OneToMany
     @ToString.Exclude
-    //@OnDelete(action = OnDeleteAction.SET_NULL)
     List<Book> books;
 
     public void addBook(Book book){

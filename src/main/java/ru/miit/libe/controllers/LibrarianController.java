@@ -26,7 +26,7 @@ import java.util.List;
 
 @Controller
 @RestController
-@RequestMapping("/api/adm")
+@RequestMapping("/librarian")
 @Tag(name = "Управление книгами, и т.п. // perm:librarian")
 @CrossOrigin({"http://localhost:3000/", "https://bitoche.cloudpub.ru/"})
 public class LibrarianController {
@@ -52,35 +52,35 @@ public class LibrarianController {
     }
 
     @Operation(summary = "Позволяет получить список статусов книг из БД")
-    @GetMapping("/getBookStatuses")
+    @GetMapping("/statuses")
     public ResponseEntity<?> getAllBookStatuses(){
         return ResponseEntity.ok(mainBookService.getAllBookStatuses());
     }
 
     @Operation(summary = "Позволяет получить список жанров книг из БД")
-    @GetMapping("/getBookGenres")
+    @GetMapping("/genres")
     public ResponseEntity<?> getAllBookGenres(){
         return ResponseEntity.ok(mainBookService.getAllBookGenres());
     }
     @Operation(summary = "Позволяет получить всех издателей из БД")
-    @GetMapping("/getPublishingHouses")
+    @GetMapping("/publishing-houses")
     public ResponseEntity<?> getPublishingHouses(){
         return ResponseEntity.ok(mainBookService.getAllPublishingHouses());
     }
     @Operation(summary = "Позволяет получить всех авторов из БД")
-    @GetMapping("/getBookAuthors")
+    @GetMapping("/authors")
     public ResponseEntity<?> getBookAuthors(){
         return ResponseEntity.ok(mainBookService.getAllBookAuthors());
     }
     @Operation(summary = "Позволяет получить все языки из БД")
-    @GetMapping("/getBookLanguages")
+    @GetMapping("/languages")
     public ResponseEntity<?> getBookLanguages(){
         return ResponseEntity.ok(mainBookService.getAllBookLanguages());
     }
 
     //add
     @Operation(summary = "Добавить новую книгу в БД")
-    @PostMapping(value = "/addBook")
+    @PostMapping(value = "/books/create")
     @Transactional
     public ResponseEntity<?> addBook(@RequestParam String bookName,
                                      @RequestParam String bookDescription,
@@ -126,13 +126,13 @@ public class LibrarianController {
                 : ResponseEntity.badRequest().body("Такой идентификатор книги уже существует (book.identifier)");
     }
     @Operation(summary = "Обновить книгу в БД")
-    @PutMapping(value = "/updateBook", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(value = "/books/update", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateBook(@RequestBody @Validated Book book){
         return ResponseEntity.ok().body(mainBookService.updateBook(book));
     }
 
     @Operation(summary = "Добавить жанр книги в БД")
-    @PostMapping("/addBookGenre")
+    @PostMapping("/genres/create")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Успешно сохранен новый жанр книги"),
             @ApiResponse(responseCode = "444", description = "Такой жанр книги уже существует (bookGenre.name)")
@@ -146,7 +146,7 @@ public class LibrarianController {
                 : ResponseEntity.status(444).body("Такой жанр книги уже существует (bookStatus.name)");
     }
     @Operation(summary = "Добавить издателя в БД")
-    @PostMapping("/addPublishingHouse")
+    @PostMapping("/publishing-houses/create")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Успешно сохранен новый издатель"),
             @ApiResponse(responseCode = "444", description = "Такой издатель уже существует (publishingHouse.name)")
@@ -160,7 +160,7 @@ public class LibrarianController {
                 : ResponseEntity.status(444).body("Такой издатель уже существует (publishingHouse.name)");
     }
     @Operation(summary = "Добавить автора в БД")
-    @PostMapping("/addBookAuthor")
+    @PostMapping("/authors/create")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Успешно сохранен новый автор"),
             @ApiResponse(responseCode = "444", description = "Такой автор уже существует (bookAuthor.identifier)")
@@ -186,7 +186,7 @@ public class LibrarianController {
                 : ResponseEntity.status(444).body("Такой автор уже существует (bookAuthor.identifier)");
     }
     @Operation(summary = "Добавить язык книги в БД")
-    @PostMapping("/addBookLanguage")
+    @PostMapping("/languages/create")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Успешно сохранен новый язык книги"),
             @ApiResponse(responseCode = "444", description = "Такой язык уже существует (bookLanguage.language_name)")
@@ -199,14 +199,14 @@ public class LibrarianController {
                 ? ResponseEntity.ok(bookLanguage)
                 : ResponseEntity.status(444).body("language "+languageName+" already exists");
     }
-    @DeleteMapping("/deleteBook")
-    @Operation(summary = "Удаляет книгу по идентификатору книги")
+    @DeleteMapping("/books/delete")
+    @Operation(summary = "Удаляет книгу (помечает удаленной)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Книга успешно удалена"),
             @ApiResponse(responseCode = "444", description = "Такой книги не существует")
     })
-    public ResponseEntity<?> deleteBookByIdentifier(@RequestParam String identifier){
-        return ResponseEntity.ok().body(mainBookService.deleteBookByIdentifier(identifier));
+    public ResponseEntity<?> deleteBookById(@RequestParam Long id){
+        return ResponseEntity.ok().body(mainBookService.deleteBookById(id));
     }
 
     // выдача книг perm:librarian

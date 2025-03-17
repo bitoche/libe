@@ -29,4 +29,6 @@ public interface IBookRepository extends JpaRepository<Book, Long> {
     List<Book> findAllByAuthors_FirstNameContainsIgnoreCaseOrAuthors_SecondNameContainsIgnoreCaseOrAuthors_ThirdNameContainsIgnoreCase(String firstName, String secondName, String thirdName);
 
     List<Book> getBooksByAuthors_AuthorId(long authorId);
+
+    Optional<Book> getByBookId(long bookId);
 }

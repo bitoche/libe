@@ -32,6 +32,8 @@ public class BorrowService {
     // Форматтер для даты
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
+    private final ReportsService reportsService;
+
     // Бронирование книги
     @Transactional
     public Borrow borrow(long userId, long bookId, Date expectedRecieptDate) {
@@ -54,6 +56,7 @@ public class BorrowService {
             bor.setBorrowStatus(EBorrowStatus.AWAITING_RECIEPT);
             bookService.updateBook(book);
             borrowRepository.save(bor);
+            reportsService.addBorrowToBorrowStatusAssign(bor, bor.getBorrowStatus());
 
             // Форматируем дату
             String formattedDate = formatDate(expectedRecieptDate);
@@ -90,7 +93,7 @@ public class BorrowService {
             var book = b.get();
             book.setBookStatus(EBookStatus.ISSUED);
             bookService.updateBook(book);
-
+            reportsService.addBorrowToBorrowStatusAssign(borrow, borrow.getBorrowStatus());
             // Форматируем дату
             String formattedDate = formatDate(expectedReturnDate);
 
@@ -126,7 +129,7 @@ public class BorrowService {
             var book = b.get();
             book.setBookStatus(EBookStatus.IN_STOCK);
             bookService.updateBook(book);
-
+            reportsService.addBorrowToBorrowStatusAssign(borrow, borrow.getBorrowStatus());
             // Формируем сообщение с переносами строк
             String message = "Вы успешно сдали книгу \"" + book.getBookName() + "\".\n" +
                     "Спасибо, " + borrow.getBorrowedUser().getFirstName() + "! Мы вас ценим, обращайтесь к нам ещё!";
@@ -159,7 +162,7 @@ public class BorrowService {
             var book = b.get();
             book.setBookStatus(EBookStatus.NOT_AVAILABLE);
             bookService.updateBook(book);
-
+            reportsService.addBorrowToBorrowStatusAssign(borrow, borrow.getBorrowStatus());
             // Формируем сообщение с переносами строк
             String message = "Книга \"" + book.getBookName() + "\" отмечена, как утерянная.\n" +
                     borrow.getBorrowedUser().getFirstName() + ", не забудьте оплатить утерю книги, в размере " +
@@ -190,7 +193,7 @@ public class BorrowService {
             borrow.setPaidDttm(LocalDateTime.now());
             borrow.setBorrowStatus(EBorrowStatus.LOST_AND_PAID);
             borrowRepository.save(borrow);
-
+            reportsService.addBorrowToBorrowStatusAssign(borrow, borrow.getBorrowStatus());
             // Формируем сообщение с переносами строк
             String message = "Оплата за утерю книги \"" + borrow.getBorrowedBook().getBookName() + "\" в размере " +
                     borrow.getRedemptionPriceIfLoss() + " рублей успешно произведена.\n" +

@@ -12,18 +12,12 @@ import org.springframework.web.bind.annotation.*;
 import ru.miit.libe.dtos.AuthorizedLKDTO;
 import ru.miit.libe.dtos.TeacherLKDTO;
 import ru.miit.libe.dtos.UserLKDTO;
-import ru.miit.libe.models.EUserRole;
-import ru.miit.libe.models.User;
-import ru.miit.libe.models.UserRole;
 import ru.miit.libe.services.BorrowService;
 import ru.miit.libe.services.UserService;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Controller
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/users")
 @Tag(name = "Контроллер для обычного пользователя // perm:all", description = "Позволяет смотреть пользователей и роли")
 @CrossOrigin({"http://localhost:3000/", "https://bitoche.cloudpub.ru/"})
 @AllArgsConstructor
@@ -33,25 +27,25 @@ public class UserController {
     private final ResponseService rs;
 
     @Operation(summary = "Достает всех пользователей из бд")
-    @GetMapping("/getAllUsers")
+    @GetMapping("/")
     public ResponseEntity<?> getAll(@Nullable boolean showOnlyCount){
         return showOnlyCount ? rs.build(userService.getAll().size()) : rs.build(userService.getAll());
     }
 
     @Operation(summary = "Достает пользователя по его ID")
-    @GetMapping("/getUser/{userId}")
+    @GetMapping("/{userId}")
     public ResponseEntity<?> getUserById(@PathVariable Long userId){
         return rs.build(userService.getById(userId));
     }
 
     @Operation(summary = "Достает все возможные роли пользователей")
-    @GetMapping("/getAllUserRoles")
+    @GetMapping("/l/roles")
     public ResponseEntity<?> getAllRoles(){
         return rs.build(userService.getAllUserRoles());
     }
 
     @Operation(summary = "Возвращает DTO для ЛК пользователя")
-    @GetMapping("/{userId}")
+    @GetMapping("/todelete/lk/{userId}")
     public ResponseEntity<?> getMYUserData(@PathVariable long userId){
         if (userService.existsById(userId)){
             //todo проверка по spring security - если не тот тогда forbidden

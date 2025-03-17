@@ -10,7 +10,7 @@ import ru.miit.libe.services.NotificationService;
 
 @Controller
 @RestController
-@RequestMapping("/api/notifications")
+@RequestMapping("/notifications")
 @Tag(name = "Просмотр уведомлений пользователя, создание уведомлений (как бы сообщений) для пользователя библиотекарем")
 @CrossOrigin({"http://localhost:3000/", "https://bitoche.cloudpub.ru/"})
 @AllArgsConstructor
@@ -25,7 +25,7 @@ public class NotificationController {
     }
 
     @Operation(summary = "Отправить уведомление пользователю // perm:librarian")
-    @PostMapping("/l/pushTo/{userId}")
+    @PostMapping("/l/send/{userId}")
     public ResponseEntity<?> createNotification(@PathVariable Long userId,
                                                 @RequestParam String title,
                                                 @RequestParam String text){
@@ -33,7 +33,7 @@ public class NotificationController {
     }
 
     @Operation(summary = "Отметить МОЕ уведомление прочитанным // perm:student, teacher")
-    @GetMapping("/{userId}/{notificationId}")
+    @GetMapping("/{userId}/check/{notificationId}")
     public ResponseEntity<?> checkNotification(@PathVariable Long userId, @PathVariable Long notificationId){
         // todo spring security проверка если тот же то ок нет deny
         var n = notificationService.getById(notificationId);

@@ -17,6 +17,7 @@ import java.util.stream.Stream;
 
 @Service
 public class MainBookService {
+    ReportsService reportsService;
     @Autowired
     IBookRepository bookRepository;
 //    @Autowired
@@ -91,7 +92,9 @@ public class MainBookService {
     }
 
     public Book addBook(@NotNull Book book){
-        return cbs.saveBook(book);
+        var r = cbs.saveBook(book);
+        reportsService.addBookToBookStatusAssign(book, book.getBookStatus());
+        return r;
     }
     public BookGenre addBookGenre(@NotNull BookGenre bookGenre){
         if (!bookGenreRepository.existsByGenreName(bookGenre.getGenreName())){
@@ -118,14 +121,23 @@ public class MainBookService {
         return null;
     }
 
-    public Book deleteBookByIdentifier(String identifier) {
-        if(bookRepository.existsByIdentifier(identifier)){
-            return cbs.deleteBookById(cbs.getByIdentifier(identifier).getBookId());
+    public Book deleteBookById(Long id) {
+        if(bookRepository.existsByBookId(id)){
+            var b = cbs.getById(id);
+            b.setIsActive(false);
+            return updateBook(b);
         }
         return null;
     }
 
     public Book updateBook(Book updatedBook){
+        var b = bookRepository.getByBookId(updatedBook.getBookId());
+        if (b.isEmpty()){
+            return null;
+        }
+        if(b.get().getBookStatus() != updatedBook.getBookStatus()){
+            reportsService.addBookToBookStatusAssign(b.get(), b.get().getBookStatus());
+        }
         return cbs.saveBook(updatedBook);
     }
 

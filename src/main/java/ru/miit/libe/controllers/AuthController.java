@@ -1,8 +1,6 @@
 package ru.miit.libe.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
@@ -15,7 +13,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import ru.miit.libe.dtos.CreateUserRequest;
 import ru.miit.libe.models.EUserRole;
-import ru.miit.libe.models.SAVETYPE;
+import ru.miit.libe.dtos.SAVETYPE;
 import ru.miit.libe.services.UserService;
 
 import java.sql.Date;
@@ -139,20 +137,20 @@ public class AuthController {
 //    }
 
     @Operation(summary = "Получить код для входа в аккаунт")
-    @PostMapping("/getOneTimeCode")
+    @PostMapping("/code/get")
     public ResponseEntity<?> getOneTimeCode(@NotNull String email){
         return userService.getOneTimeCode(email);
     }
 
     @Operation(summary = "Вход в аккаунт")
-    @PostMapping("/loginProcessing")
+    @PostMapping("/login")
     public ResponseEntity<?> login(@NotNull String email, @NotNull String password, @NotNull String entryCode){
         return rs.build(userService.loginWithOneTimeCode(email, password, entryCode));
     }
 
     // проверка авторизации пользователя
     @Operation(summary = "test me")
-    @GetMapping("/testme")
+    @GetMapping("/todelete/testme")
     public ResponseEntity<?> testme(){
         // Получаем аутентификацию из контекста безопасности
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

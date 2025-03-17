@@ -1,7 +1,6 @@
 package ru.miit.libe.services;
 
 import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,12 +8,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.lang.Nullable;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.miit.libe.dtos.CreateUserRequest;
 import ru.miit.libe.dtos.MailMessageDTO;
+import ru.miit.libe.dtos.SAVETYPE;
 import ru.miit.libe.dtos.UpdateUserRequest;
 import ru.miit.libe.models.*;
 import ru.miit.libe.repository.*;
@@ -35,6 +34,9 @@ public class UserService {
     private EmailService emailService;
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private ReportsService reportsService;
 
     public List<EUserRole> getAllUserRoles() {
         return List.of(EUserRole.values());
@@ -71,6 +73,7 @@ public class UserService {
                     // меняю роль пользователя на "AUTHORIZED"
                     enteredUser.setRole(EUserRole.AUTHORIZED);
                     userRepository.save(enteredUser);
+                    reportsService.addUserToUserRoleAssign(enteredUser, enteredUser.getRole());
                     return ResponseEntity.status(200).body(enteredUser);
                 } else {
                     return ResponseEntity.status(302).build();
@@ -135,6 +138,7 @@ public class UserService {
         PasswordEncoder pe = new BCryptPasswordEncoder();
         obj.setPassword(pe.encode(obj.getPassword()));
         obj = userRepository.save(obj);
+        reportsService.addUserToUserRoleAssign(obj, obj.getRole());
         if (saveType == SAVETYPE.WITH_ROLE_INCLUDED){
             // отправлять код или нет при регистрации админом?
             // сейчас - не отправлять
@@ -170,6 +174,7 @@ public class UserService {
         }
         if(obj.getNewRole()!=null){
             user.setRole(obj.getNewRole());
+            reportsService.addUserToUserRoleAssign(user, user.getRole());
         }
         userRepository.save(user);
         return user;
@@ -180,6 +185,7 @@ public class UserService {
             return false;
         }
         userRepository.save(user);
+        reportsService.addUserToUserRoleAssign(user, user.getRole());
         return true;
     }
 
@@ -187,10 +193,21 @@ public class UserService {
         // Находим пользователя
         var deletedUser = userRepository.findById(id);
         if(deletedUser.isPresent()){
-            userRepository.deleteById(id);
-            return deletedUser.get();
+            var u = deletedUser.get();
+            u.setIsActive(false);
+            update(u);
+            return u;
         }
         return null;
+    }
+    public User update(User user){
+        if(!userRepository.existsById(user.getUserId())){
+            return null;
+        }
+        if(userRepository.findById(user.getUserId()).get().getRole() != user.getRole()){
+            reportsService.addUserToUserRoleAssign(user, user.getRole());
+        }
+        return userRepository.save(user);
     }
 
     public boolean existsByUsername(String email) {

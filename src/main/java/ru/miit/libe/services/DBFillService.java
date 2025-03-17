@@ -32,8 +32,10 @@ public class DBFillService {
     @Autowired
     IBookShelfRepository bookShelfRepository;
 
+    @Autowired
+    private ReportsService reportsService;
 
-    @Transactional
+
     public List<Book> generateBooks(int count) {
         List<Book> generated = new ArrayList<>();
         for (int i = 0; i < count; i++) {
@@ -42,11 +44,12 @@ public class DBFillService {
                 System.out.println("DB is not filled");
                 return null;
             }
-            b.setAuthors(RandomService.selectRandObjectsFrom(bookAuthorRepository.findAll(), 1));
-            b.setGenres(RandomService.selectRandObjectsFrom(bookGenreRepository.findAll(), 1));
+            b.setAuthors(RandomService.selectRandObjectsFrom(bookAuthorRepository.findAll(), 2));
+            b.setGenres(RandomService.selectRandObjectsFrom(bookGenreRepository.findAll(), 2));
             b.setPublishingHouse(RandomService.selectRandObjectsFrom(publishingHouseRepository.findAll(), 1).getFirst());
             b.setLanguage(RandomService.selectRandObjectsFrom(bookLanguageRepository.findAll(), 1).getFirst());
             bookRepository.save(b);
+            reportsService.addBookToBookStatusAssign(b, b.getBookStatus());
             generated.add(b);
         }
         return generated;
@@ -148,6 +151,7 @@ public class DBFillService {
             user.setThirdName(RandomService.randFrom(RandomService.MALE_PATRONYMICS));
             user.setRegisterDttm(LocalDateTime.now());
             userRepository.save(user);
+            reportsService.addUserToUserRoleAssign(user, user.getRole());
         }
 
     }
@@ -189,6 +193,14 @@ public class DBFillService {
                 }
 
                 cabinetRepo.save(c); // Сохраняем шкаф с полками
+
+            }
+            // для теста отчетов
+            for (Bookshelf bs : bookShelfRepository.findAll()) {
+                assert bs.getBooks() != null;
+                for (Book b : bs.getBooks()){
+                    reportsService.addBookToBookshelfAssign(b, bs, "+");
+                }
             }
         }
     }

@@ -1,6 +1,8 @@
 package ru.miit.libe.models;
 
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import jdk.jfr.Timestamp;
 import lombok.*;
@@ -48,12 +50,11 @@ public class Book {
     @OnDelete(action = OnDeleteAction.SET_NULL)
     BookLanguage language;
 
-//    @ManyToOne
-//    @OnDelete(action = OnDeleteAction.SET_NULL)
-//    Bookshelf bookshelf;
-
     @Timestamp
     LocalDateTime addDttm;
+
+    @Nullable
+    Boolean isActive;
 
     public void addAuthor(BookAuthor a){
         if(authors==null){

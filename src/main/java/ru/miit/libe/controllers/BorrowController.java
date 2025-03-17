@@ -18,7 +18,7 @@ import java.util.Date;
 
 @Controller
 @RestController
-@RequestMapping("/api/borrow")
+@RequestMapping("/borrows")
 @Tag(name = "Управление запросами на получение, бронированиями книг и т.п. // perm:librarian/student/teacher")
 @CrossOrigin({"http://localhost:3000/", "https://bitoche.cloudpub.ru/"})
 @AllArgsConstructor
@@ -28,7 +28,7 @@ public class BorrowController {
     ResponseService rs;
     // бронирование книг perm:student/teacher
     @Operation(summary = "Бронирование книги пользователем, предполагаемое получение на определенную дату")
-    @PostMapping("/bookBorrow")
+    @PostMapping("/u/book")
     public ResponseEntity<?> bookBorrow(@RequestParam long userId,
                                         @RequestParam long bookId,
                                         @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date expectedRecieptDate){
@@ -36,7 +36,7 @@ public class BorrowController {
     }
     // выдача книг perm:librarian
     @Operation(summary = "Выдать книгу по определенной брони")
-    @PostMapping("/l/extradition")
+    @PostMapping("/l/borrows/extradition")
     public ResponseEntity<?> extraditionBorrow(@RequestParam int borrowId,
                                                @RequestParam int redemptionPriceIfLoss,
                                                @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date expectedReturnDate){
@@ -44,42 +44,42 @@ public class BorrowController {
     }
     // возвращение книг perm:librarian
     @Operation(summary = "Вернуть книгу по определенной брони")
-    @PostMapping("/l/return")
+    @PostMapping("/l/borrows/return")
     public ResponseEntity<?> returnBook(@RequestParam int borrowId){
         return rs.build(borrowService.returnBook(borrowId));
     }
     // возвращение книг, книга утеряна perm:librarian
     @Operation(summary = "Книга утеряна по определенной брони")
-    @PostMapping("/l/lost")
+    @PostMapping("/l/borrows/lost")
     public ResponseEntity<?> lostBook(@RequestParam int borrowId){
         return rs.build(borrowService.lostBook(borrowId));
     }
     // возвращение книг, уплачено за утерю perm:librarian
     @Operation(summary = "Утеря книги уплачена по определенной брони")
-    @PostMapping("/l/paidForLostBook")
+    @PostMapping("/l/borrows/paid")
     public ResponseEntity<?> paidForLostBook(@RequestParam int borrowId){
         return rs.build(borrowService.paidForLostBook(borrowId));
     }
     // получить бронь по фильтру
     @Operation(summary = "Получить бронь по пользователю")
-    @GetMapping("/l/getBorrowByUser")
+    @GetMapping("/l/borrows/search/user")
     public ResponseEntity<?> getBorrowByUser(@RequestParam long userId){
         return rs.build(borrowService.findBorrowByUser(userId));
     }
     @Operation(summary = "Получить бронь по книге")
-    @GetMapping("/l/getBorrowByBook")
+    @GetMapping("/l/borrows/search/book")
     public ResponseEntity<?> getBorrowByBook(@RequestParam long bookId){
         return rs.build(borrowService.findBorrowByUser(bookId));
     }
     @Operation(summary = "Получить бронь по статусу")
-    @GetMapping("/l/getBorrowByStatus")
+    @GetMapping("/l/borrows/search/status")
     public ResponseEntity<?> getBorrowByStatus(EBorrowStatus status){
         return rs.build(borrowService.findBorrowByStatus(status));
     }
 
     // пользователь - должен быть
     @Operation(summary = "Получить МОИ брони")
-    @GetMapping("/{userId}/getBorrows")
+    @GetMapping("/u/borrows/get/{userId}")
     public ResponseEntity<?> getMyBorrows(@PathVariable long userId){
         //todo spring security проверка на авторизовавшегося пользователя - должен быть тот же, иначе forbidden
         return rs.build(borrowService.findBorrowByUser(userId));
@@ -88,25 +88,25 @@ public class BorrowController {
 
     // запросы книг
     @Operation(summary = "Получить все запросы книг")
-    @GetMapping("/l/getBooksRequests")
+    @GetMapping("/l/requests/")
     public ResponseEntity<?> getBooksRequests(){
         return rs.build(borrowService.getAllBookRequests());
     }
     @Operation(summary = "Получить все запросы книг от пользователя")
-    @GetMapping("/l/getBooksRequestsByUser")
-    public ResponseEntity<?> getBooksRequestsByUser(@RequestParam long userId){
+    @GetMapping("/l/requests/search/user/{userId}")
+    public ResponseEntity<?> getBooksRequestsByUser(@PathVariable long userId){
         return rs.build(borrowService.getRequestBooksByUserId(userId));
     }
     // запрос книг perm:teacher - only authenticated
     @Operation(summary = "Получить все МОИ запросы книг")
-    @GetMapping("/{userId}/getBooksRequests")
+    @GetMapping("/t/requests/user/{userId}")
     public ResponseEntity<?> getMyBooksRequests(@PathVariable long userId){
         //todo spring security проверка на авторизовавшегося пользователя - должен быть тот же, иначе forbidden
         return rs.build(borrowService.getRequestBooksByUserId(userId));
     }
     // запрос книг perm:teacher - only authenticated
     @Operation(summary = "Создать запрос на книги")
-    @PostMapping("/{userId}/createBookRequest")
+    @PostMapping("/t/requests/create/{userId}")
     public ResponseEntity<?> createBookRequest(@PathVariable long userId, @RequestBody CreateRequestBooksRequest cbr){
         //todo spring security проверка на авторизовавшегося пользователя - должен быть тот же, иначе forbidden
         if(userService.existsById(userId)){
@@ -121,13 +121,13 @@ public class BorrowController {
         return rs.build(null);
     }
     @Operation(summary = "Получить запросы на книги по статусу")
-    @GetMapping("/l/getAllRequestsByStatus")
+    @GetMapping("/l/requests/search/status")
     public ResponseEntity<?> getAllRequestsByStatus(@RequestParam boolean isActive){
         return rs.build(borrowService.getRequestBooksByStatus(isActive));
     }
 
     @Operation(summary = "Изменить МОЙ запрос на книги")
-    @PostMapping("/{userId}/changeRequest/{requestId}")
+    @PostMapping("/t/requests/change/{userId}/{requestId}")
     public ResponseEntity<?> changeRequest(@PathVariable long userId, @PathVariable long requestId, @RequestBody CreateRequestBooksRequest createRequestBooksRequest){
         //todo spring security проверка на авторизовавшегося пользователя - должен быть тот же, иначе forbidden
         if(userService.existsById(userId)){
@@ -144,7 +144,7 @@ public class BorrowController {
         return rs.build(null);
     }
     @Operation(summary = "Закрыть запрос на книги")
-    @PutMapping("/l/closeRequest/{requestId}")
+    @PutMapping("/l/requests/close/{requestId}")
     public ResponseEntity<?> getAllRequestsByStatus(@PathVariable long requestId){
         var r = borrowService.getRequestBooksById(requestId);
         if(r != null){

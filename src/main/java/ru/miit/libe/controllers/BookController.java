@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 
 @Controller
 @RestController
-@RequestMapping("/api/book")
+@RequestMapping("/books")
 @Tag(name = "Юзер-контроллер книг // perm:all", description = "Позволяет найти нужную книгу по автору, идентификатору, и т.д.")
 @CrossOrigin({"http://localhost:3000/", "https://bitoche.cloudpub.ru/"})
 public class BookController {
@@ -42,7 +42,7 @@ public class BookController {
         this.rs=rs;
     }
 
-    @GetMapping("/byName")
+    @GetMapping("/search/name")
 //    @ApiResponses(value = {
 //            @ApiResponse(responseCode = "200", description = "Книги успешно найдены"),
 //            @ApiResponse(responseCode = "201", description = "Запрос выполнен, книг не найдено")
@@ -51,7 +51,7 @@ public class BookController {
         return rs.build(bookRepository.findAllByBookNameContains(namePart));
     }
 
-    @GetMapping("/byAuthorIdentifier")
+    @GetMapping("/search/author-identifier")
 //    @ApiResponses(value = {
 //            @ApiResponse(responseCode = "200", description = "Книги успешно найдены"),
 //            @ApiResponse(responseCode = "201", description = "Запрос выполнен, книг не найдено")
@@ -60,7 +60,7 @@ public class BookController {
     public ResponseEntity<?> getBooksByAuthor(@RequestParam String authorIdentifier){
         return rs.build(bookRepository.findAllByAuthors_IdentifierIn(Collections.singleton(authorIdentifier))) ;
     }
-    @GetMapping("/byAuthorName")
+    @GetMapping("/search/author-name")
     @Operation(summary = "Найти книги по имени/фамилии/отчеству автора")
     public ResponseEntity<?> getBooksByAuthorName(@RequestParam String authorName){
         List<Book> resp = new ArrayList<>();
@@ -75,7 +75,7 @@ public class BookController {
         }
         return rs.build(resp);
     }
-    @GetMapping("/byBookIdentifier")
+    @GetMapping("/search/book-identifier")
 //    @ApiResponses(value = {
 //            @ApiResponse(responseCode = "200", description = "Книга успешно найдена"),
 //            @ApiResponse(responseCode = "201", description = "Запрос выполнен, книг не найдено")
@@ -84,7 +84,7 @@ public class BookController {
         return rs.build(bookRepository.findByIdentifier(fullIdentifier));
     }
 
-    @GetMapping("/byBookGenre")
+    @GetMapping("/search/genre")
 //    @ApiResponses(value = {
 //            @ApiResponse(responseCode = "200", description = "Книга успешно найдена"),
 //            @ApiResponse(responseCode = "201", description = "Запрос выполнен, книг не найдено")
@@ -98,7 +98,7 @@ public class BookController {
 //            @ApiResponse(responseCode = "201", description = "Не найдено ни одной книги")
 //    })
     @Operation(summary = "Позволяет получить список книг из БД")
-    @GetMapping("/getBooks")
+    @GetMapping("/")
     public ResponseEntity<?> getAllBooks(@Nullable boolean showOnlyCount){
         var r = mainBookService.getAllBooks();
         return showOnlyCount ? rs.build((long) r.size()) : rs.build(r);
@@ -109,7 +109,7 @@ public class BookController {
 //    })
     @Operation(summary = "Позволяет получить все книги, подходящие под запрос.",
     description = "Ищет по частям запроса подходящие книги по авторам, описанию, названию, и т.д. Может быть улучшен")
-    @GetMapping("/search")
+    @GetMapping("/search/request")
     public ResponseEntity<?> getBooksBySearchRequest(@RequestParam @NotNull @Size(min = 3) String searchRequest, @Nullable boolean showOnlyCount){
         var r = mainBookService.searchBooksFromSearchField(searchRequest);
         return showOnlyCount ? rs.build((long) r.size()) : rs.build(r);

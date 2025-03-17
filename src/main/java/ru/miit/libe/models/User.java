@@ -36,6 +36,9 @@ public class User {
     String password;
     EUserRole role;
     LocalDateTime registerDttm;
+
+    @Nullable
+    Boolean isActive;
 //    @Nullable
 //    EUserAccountStatus userAccountStatus;
     //todo доделать логику, обновить БД под новое поле

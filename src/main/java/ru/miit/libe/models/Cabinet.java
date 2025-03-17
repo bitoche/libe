@@ -34,4 +34,7 @@ public class Cabinet {
         }
         return 0;
     }
+    @Nullable
+    @ToString.Exclude
+    Boolean isActive = true; // чтобы при создании записи было сразу true
 }

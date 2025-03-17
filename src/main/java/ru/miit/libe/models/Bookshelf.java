@@ -31,7 +31,9 @@ public class Bookshelf {
     @OneToMany
     @ToString.Exclude
     List<Book> books;
-
+    @Nullable
+    @ToString.Exclude
+    Boolean isActive = true; // чтобы при создании записи было сразу true
     public void addBook(Book book){
         if(books == null){
             books = new ArrayList<>();

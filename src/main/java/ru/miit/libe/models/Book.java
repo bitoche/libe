@@ -54,7 +54,8 @@ public class Book {
     LocalDateTime addDttm;
 
     @Nullable
-    Boolean isActive;
+    @ToString.Exclude
+    Boolean isActive = true; // чтобы при создании записи было сразу true
 
     public void addAuthor(BookAuthor a){
         if(authors==null){

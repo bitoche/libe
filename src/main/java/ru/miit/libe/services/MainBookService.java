@@ -49,7 +49,7 @@ public class MainBookService {
     }
 
     public List<Book> getAllBooks(){
-        return cbs.getAll();
+        return cbs.getAll().stream().filter(b-> Boolean.TRUE.equals(b.getIsActive())).toList(); // возвращаем только активные
     }
     public List<EBookStatus> getAllBookStatuses(){
         return List.of(EBookStatus.values());

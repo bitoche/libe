@@ -13,6 +13,7 @@ import ru.miit.libe.repository.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @AllArgsConstructor
@@ -33,17 +34,17 @@ public class WarehouseService {
     private final ReportsService reportsService;
 
     public List<Cabinet> getAllCabinets(){
-        return cabinetRepository.findAll();
+        return cabinetRepository.findAll().stream().filter(s-> Boolean.TRUE.equals(s.getIsActive())).toList(); // только активные;
     }
     public List<Cabinet> getAllCabinetsByCabinetName(String cabinetName){
-        return cabinetRepository.findByCabinetNameContainsIgnoreCase(cabinetName);
+        return cabinetRepository.findByCabinetNameContainsIgnoreCase(cabinetName).stream().filter(s-> Boolean.TRUE.equals(s.getIsActive())).toList(); // только активные;
     }
 
     public List<Bookshelf> getAllBookshelvesByCabinet(int cabinetId){
         if(cabinetId!=-1){
-            return bookShelfRepository.findAllByCabinet_CabinetId(cabinetId);
+            return bookShelfRepository.findAllByCabinet_CabinetId(cabinetId).stream().filter(s-> Boolean.TRUE.equals(s.getIsActive())).toList(); // только активные
         }
-        else return bookShelfRepository.findAllByCabinetNull();
+        else return bookShelfRepository.findAllByCabinetNull().stream().filter(s-> Boolean.TRUE.equals(s.getIsActive())).toList(); // только активные
     }
 
     @Transactional
@@ -176,8 +177,8 @@ public class WarehouseService {
 
     @Transactional
     public List<Book> getAllBooksByShelfId(int shelfId){
-        return bookShelfRepository.findById(shelfId)
-                .map(Bookshelf::getBooks).orElse(null);
+        return Objects.requireNonNull(bookShelfRepository.findById(shelfId)
+                .map(Bookshelf::getBooks).orElse(null)).stream().filter(b-> Boolean.TRUE.equals(b.getIsActive())).toList();
     }
 
     @Transactional
@@ -218,9 +219,9 @@ public class WarehouseService {
                 cabinetRepository.save(cab);
             }
             sh.setBooks(null);
+            sh.setIsActive(false); // деактивируем
             bookShelfRepository.save(sh);
-            bookShelfRepository.delete(sh);
-            sh.setBooks(bs);
+//            bookShelfRepository.delete(sh);
             return sh;
         }
         else System.out.println("Not defined shelfId");
@@ -251,8 +252,8 @@ public class WarehouseService {
                 }
             }
             cab.setShelves(null);
+            cab.setIsActive(false);
             cabinetRepository.save(cab);
-            cabinetRepository.delete(cab);
             return cab;
         }
         return null;

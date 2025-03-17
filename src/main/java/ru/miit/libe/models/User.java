@@ -38,7 +38,8 @@ public class User {
     LocalDateTime registerDttm;
 
     @Nullable
-    Boolean isActive;
+    @ToString.Exclude
+    Boolean isActive = true; // чтобы при создании записи было сразу true
 //    @Nullable
 //    EUserAccountStatus userAccountStatus;
     //todo доделать логику, обновить БД под новое поле

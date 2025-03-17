@@ -47,7 +47,7 @@ public class UserService {
     }
 
     public List<User> getAll() {
-        return userRepository.findAll();
+        return userRepository.findAll().stream().filter(u-> Boolean.TRUE.equals(u.getIsActive())).toList(); // возвращаем только активные
     }
 
     public User getById(Long id) {

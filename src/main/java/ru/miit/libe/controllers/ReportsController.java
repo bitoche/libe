@@ -3,6 +3,7 @@ package ru.miit.libe.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Repository;
@@ -26,10 +27,23 @@ public class ReportsController {
     private final ReportsService reportsService;
     private final ResponseService rs;
 
+    // получить список отчетов
+    @GetMapping("/get/list")
+    @Operation(summary = "Получить список сформированных отчетов")
+    public ResponseEntity<?> getReportsList(){
+        return rs.build(reportsService.getReportsList());
+    }
+
+
     // получить отчеты
+    @GetMapping("/get/by_id/{calcId}")
+    @Operation(summary = "Получить отчет по его ID и типу")
+    public ResponseEntity<?> getReportByCalcId(@PathVariable int calcId, @RequestParam @Nullable EReportType reportType){
+        return rs.build(reportsService.getReportById(calcId, reportType));
+    }
 
     // сгенерировать отчеты
-    @GetMapping("/generate/by/period")
+    @PostMapping("/generate/by/period")
     @Operation(summary = "Сгенерировать отчеты по данным за период")
     public ResponseEntity<?> generateByStatus(@RequestParam Date startDate,
                                               @RequestParam Date endDate) {
@@ -51,7 +65,6 @@ public class ReportsController {
             return rs.build(resp);
         }
     }
-    // отчет по заказам книг
-    // количество книг на складе
+
 
 }

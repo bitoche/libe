@@ -54,6 +54,36 @@ def handle_request():
     except Exception as e:
         logging.error(f"Error processing request: {str(e)}")
         return {'status': 'error', 'message':str(e)}, 500
+    
+@app.route('/api/getReport', methods=['POST'])
+def get_reports_by_id_request():
+    try:
+        params = request.get_json()
+        print(f'recieved params = {params}')
+        # Бизнес-логика обработки
+        try:
+            calc_id = int(params['calc_id'])
+        except:
+            return {'status': 'error', 'message': 'calc_id not present'}, 400
+        
+        try:
+            report_name = params['report_name']
+        except:
+            print(f'report_name not present. setted to default = all')
+            report_name = 'all'
+        parsed_params = {
+            'calc_id': calc_id,
+            'report_name': report_name
+        }
+        print(f'parsed params = {parsed_params}')
+        
+        # не асинхронная версия
+        response = service.get_report_by_id(params=parsed_params)
+        
+        return {'status': 'success', 'data': response}, 200
+    except Exception as e:
+        logging.error(f"Error processing request: {str(e)}")
+        return {'status': 'error', 'message':str(e)}, 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8081)

@@ -6,6 +6,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jdk.jfr.Timestamp;
 import lombok.AllArgsConstructor;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,31 @@ public class ReportsService {
     private IBorrowToBorrowStatusRepository borrowToBorrowStatusRepository;
     private IUserToUserRoleRepository userToUserRoleRepository;
     private IReportEntryRepository reportEntryRepository;
+    private String getPythonServiceUrl(){
+        try {
+            return "http://<host>:8081/".replace("<host>", InetAddress.getLocalHost().getHostAddress());
+        } catch (UnknownHostException e) {
+            System.out.println(e);
+            return null;
+        }
+    }
+
+    private ResponseEntity<?> postRequestToUrl(String url, Map<String, String> params){
+        final RestTemplate restTemplate = new RestTemplate();
+        try {
+            ResponseEntity<Map> response = restTemplate.postForEntity(
+                    url,
+                    params,
+                    Map.class
+            );
+
+            return ResponseEntity.ok(response.getBody());
+        } catch (RestClientException e) {
+            return ResponseEntity.status(500).body(
+                    Map.of("error", "This service unavailable")
+            );
+        }
+    }
 
     @Async
     public void addBookToBookStatusAssign(Book b, EBookStatus s){
@@ -81,10 +107,12 @@ public class ReportsService {
     }
 
     public ResponseEntity<?> startReports(Date startDate, Date endDate, EReportType reportType) {
-        try {
-            InetAddress inetAddress = InetAddress.getLocalHost();
-            final String PYTHON_SERVICE_URL = "http://<host>:8081/api/startReports".replace("<host>", inetAddress.getHostAddress());
-            final RestTemplate restTemplate = new RestTemplate();
+            var pythonServiceUrl = getPythonServiceUrl();
+            if(pythonServiceUrl==null){
+                return null;
+            }
+            String START_REPORTS_URL = pythonServiceUrl+"api/startReports";
+
             // Показатель "Читаемость" (Readability) — среднее число книг, выданных одному читателю за период.
             // "Обращаемость" (Appeal rate) — среднее число книговыдач на единицу фонда (на книгу).
             // "Книгообеспеченность" (Book security) — среднее количество книг, приходящихся на одного зарегистрированного читателя.
@@ -101,28 +129,25 @@ public class ReportsService {
             params.put("calc_id", String.valueOf(calcId));
             params.put("start_date", startDate.toString());
             params.put("end_date", endDate.toString());
-            try {
-                ResponseEntity<Map> response = restTemplate.postForEntity(
-                        PYTHON_SERVICE_URL,
-                        params,
-                        Map.class
-                );
+            return postRequestToUrl(START_REPORTS_URL, params);
 
-                return ResponseEntity.ok(response.getBody());
-            } catch (RestClientException e) {
-                return ResponseEntity.status(500).body(
-                        Map.of("error", "Python service unavailable")
-                );
-            }
+    }
+    public Object getReportById(int calcId, @Nullable EReportType reportType){
+        var pythonServiceUrl = getPythonServiceUrl();
+        if(pythonServiceUrl==null){
+            return null;
         }
-        catch (UnknownHostException e){
-            System.out.println(e);
-            return ResponseEntity.status(500).body(
-                    Map.of("error", "Python service unavailable")
-            );
+        String GET_REPORT_URL = pythonServiceUrl+"api/getReport";
+        Map<String, String> params = new HashMap<>();
+        params.put("calc_id", String.valueOf(calcId));
+        if (reportType!=null){
+            params.put("report_name", reportType.getCode());
         }
+        return postRequestToUrl(GET_REPORT_URL, params);
+    }
 
-
+    public List<ReportEntry> getReportsList(){
+        return reportEntryRepository.findAll();
     }
 
 

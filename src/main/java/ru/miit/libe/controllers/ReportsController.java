@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.*;
 import ru.miit.libe.models.EBookStatus;
+import ru.miit.libe.models.historicized.EReportType;
 import ru.miit.libe.services.ReportsService;
 
 import java.sql.Date;
@@ -24,12 +25,12 @@ public class ReportsController {
 
     // получить отчеты
 
-    // сгенерировать отчет по количеству книг со сменами статусов за период
+    // сгенерировать отчеты
     @GetMapping("/generate/by/period")
-    @Operation(summary = "Сгенерировать отчет по статусам книг ")
+    @Operation(summary = "Сгенерировать отчеты по данным за период")
     public ResponseEntity<?> generateByStatus(@RequestParam Date startDate,
                                               @RequestParam Date endDate){
-        return rs.build(reportsService.getBookToBookStatusesByPeriod(startDate, endDate));
+        return rs.build(reportsService.startReports(startDate, endDate, EReportType.ALL));
     }
     // отчет по заказам книг
     // количество книг на складе

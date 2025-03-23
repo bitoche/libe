@@ -67,6 +67,7 @@ public class LibeApplication {
 			new EnvVar("DB_NAME", "Str"),
 			new EnvVar("DB_USERNAME", "Str"),
 			new EnvVar("DB_PASSWORD", "Str"),
+			new EnvVar("DB_REPORTS_SCHEMA", "Str"),
 			new EnvVar("DB_DEBUG", "Str"),
 			new EnvVar("DEBUG", "Str"),
 			new EnvVar("MAIL_USERNAME", "Str"),

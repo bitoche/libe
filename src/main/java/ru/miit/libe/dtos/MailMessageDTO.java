@@ -18,8 +18,8 @@ public class MailMessageDTO {
         this.textMessage = convertToHtml(
                 addNoReplyFooter(
                         isRegister
-                                ? "Ваш код для завершения регистрации на сайте:\n" + makeECBeautiful(ec)
-                                : "Ваш код для входа на сайт:\n" + makeECBeautiful(ec)
+                                ? "<h4 style=\"text-align:center\">Ваш код для завершения регистрации на сайте:</h4>\n" + makeECBeautiful(ec)
+                                : "<h4 style=\"text-align:center\">Ваш код для входа на сайт:</h4>\n" + makeECBeautiful(ec)
                 )
         );
     }
@@ -38,7 +38,7 @@ public class MailMessageDTO {
     // Форматирование кода и времени
     private String makeECBeautiful(EntryCode ec) {
         String date = ec.getExpireDateTime().toLocalDate().toString();
-        String time = String.format("%02d ч. %02d мин. %02d сек.",
+        String time = String.format("%02d:%02d:%02d",
                 ec.getExpireDateTime().toLocalTime().getHour(),
                 ec.getExpireDateTime().toLocalTime().getMinute(),
                 ec.getExpireDateTime().toLocalTime().getSecond()
@@ -46,7 +46,7 @@ public class MailMessageDTO {
         String datetime = date + ", " + time;
 
         return "<table style=\"width:100%; border-collapse: collapse;\">" +
-                "<tr><td style=\"text-align:center\"><b style=\"font-size:20px\">" + escapeHtml(ec.getCode()) + "</b></td></tr>" +
+                "<tr><td style=\"text-align:center\"><b style=\"font-size:40px\">" + escapeHtml(ec.getCode()) + "</b></td></tr>" +
                 "<tr><td style=\"text-align:center\">Действителен до: " + escapeHtml(datetime) + "</td></tr>" +
                 "</table>";
     }

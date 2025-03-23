@@ -16,6 +16,8 @@ import ru.miit.libe.models.historicized.*;
 import ru.miit.libe.repository.historicized.*;
 
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -78,38 +80,48 @@ public class ReportsService {
         return borrowToBorrowStatusRepository.getAllByAssignDttmBetween(LocalDateTime.parse(startDate.toString()+"T00:00:00"), LocalDateTime.parse(endDate.toString()+"T00:00:00"));
     }
 
-    public ResponseEntity<?> startReports(Date startDate, Date endDate, EReportType reportType){
-        final String PYTHON_SERVICE_URL = "http://localhost:5000/api/startReports";
-        final RestTemplate restTemplate = new RestTemplate();
-        // Показатель "Читаемость" (Readability) — среднее число книг, выданных одному читателю за период.
-        // "Обращаемость" (Appeal rate) — среднее число книговыдач на единицу фонда (на книгу).
-        // "Книгообеспеченность" (Book security) — среднее количество книг, приходящихся на одного зарегистрированного читателя.
-        // "Процент учащихся" (Percentage of students) - общее число пользователей деленное на число студентов
-        // "Показатель нагрузки библиотекаря" (Librarian's workload indicator) — Число читателей / на число библиотекарей
-        ReportEntry report = new ReportEntry();
-        report.setReportType(reportType);
-        report.setReportDttm(LocalDateTime.now());
-        reportEntryRepository.save(report);
-
-        int calcId = report.getId();
-
-        Map<String, String> params = new HashMap<>();
-        params.put("calc_id", String.valueOf(calcId));
-        params.put("start_date", startDate.toString());
-        params.put("end_date", endDate.toString());
+    public ResponseEntity<?> startReports(Date startDate, Date endDate, EReportType reportType) {
         try {
-            ResponseEntity<Map> response = restTemplate.postForEntity(
-                    PYTHON_SERVICE_URL,
-                    params,
-                    Map.class
-            );
+            InetAddress inetAddress = InetAddress.getLocalHost();
+            final String PYTHON_SERVICE_URL = "http://<host>:8081/api/startReports".replace("<host>", inetAddress.getHostAddress());
+            final RestTemplate restTemplate = new RestTemplate();
+            // Показатель "Читаемость" (Readability) — среднее число книг, выданных одному читателю за период.
+            // "Обращаемость" (Appeal rate) — среднее число книговыдач на единицу фонда (на книгу).
+            // "Книгообеспеченность" (Book security) — среднее количество книг, приходящихся на одного зарегистрированного читателя.
+            // "Процент учащихся" (Percentage of students) - общее число пользователей деленное на число студентов
+            // "Показатель нагрузки библиотекаря" (Librarian's workload indicator) — Число читателей / на число библиотекарей
+            ReportEntry report = new ReportEntry();
+            report.setReportType(reportType);
+            report.setReportDttm(LocalDateTime.now());
+            reportEntryRepository.save(report);
 
-            return ResponseEntity.ok(response.getBody());
-        } catch (RestClientException e) {
+            int calcId = report.getId();
+
+            Map<String, String> params = new HashMap<>();
+            params.put("calc_id", String.valueOf(calcId));
+            params.put("start_date", startDate.toString());
+            params.put("end_date", endDate.toString());
+            try {
+                ResponseEntity<Map> response = restTemplate.postForEntity(
+                        PYTHON_SERVICE_URL,
+                        params,
+                        Map.class
+                );
+
+                return ResponseEntity.ok(response.getBody());
+            } catch (RestClientException e) {
+                return ResponseEntity.status(500).body(
+                        Map.of("error", "Python service unavailable")
+                );
+            }
+        }
+        catch (UnknownHostException e){
+            System.out.println(e);
             return ResponseEntity.status(500).body(
                     Map.of("error", "Python service unavailable")
             );
         }
+
 
     }
 

@@ -5,7 +5,7 @@ from helpers import replace_all, read_file_data, execute_query
 import pandas
 
 def start_reports(params:dict):
-
+    print(f'started calc with params: {params}')
     
     MODULE_PATH = Path.cwd()
     SCRIPTS_PATH = MODULE_PATH / 'scripts'
@@ -18,8 +18,28 @@ def start_reports(params:dict):
     }
 
     reports = [
-        "rep_readability"
+        "rep_readability",
+        "rep_appeal_rate",
+        "rep_metrics" # должна быть в конце, т.к. использует предыдущие витрины
     ]
+    refs = [
+        "generate_refs"
+    ]
+
+    # загрузка справочников
+    refs_variables = {
+        '$reports_schema_value': DB_CONFIG['REPORTS_SCHEMA']
+    }
+    for r in refs:
+        ref_params = {
+            'refs_scripts_paths': SCRIPTS_PATH / 'refs' / f'{r}.sql',
+        }
+        raw_query = read_file_data(ref_params['refs_scripts_paths'], debug=True)
+        ready_query = replace_all(raw_query, refs_variables, debug=False)
+        execute_query(ready_query, debug=True)
+
+
+    # выполнение отчетов
     for r in reports:
         print(f'started {r}\nenv_params: {watch_env_params()}')
 
@@ -36,6 +56,7 @@ def start_reports(params:dict):
             '$filtered_start_date_value': params['start_date'],
             '$filtered_end_date_value': params['end_date'],
             '$extracted_schema_name_value': raw_data_schema,
+            '$report_table_name_value': report_params['report_name']
         }
 
         raw_query = read_file_data(report_params['report_script_path'], debug=True)

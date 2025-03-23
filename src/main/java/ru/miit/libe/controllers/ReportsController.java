@@ -11,7 +11,10 @@ import ru.miit.libe.models.EBookStatus;
 import ru.miit.libe.models.historicized.EReportType;
 import ru.miit.libe.services.ReportsService;
 
+import java.net.UnknownHostException;
 import java.sql.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 @RestController
@@ -29,8 +32,24 @@ public class ReportsController {
     @GetMapping("/generate/by/period")
     @Operation(summary = "Сгенерировать отчеты по данным за период")
     public ResponseEntity<?> generateByStatus(@RequestParam Date startDate,
-                                              @RequestParam Date endDate){
-        return rs.build(reportsService.startReports(startDate, endDate, EReportType.ALL));
+                                              @RequestParam Date endDate) {
+        var response = reportsService.startReports(startDate, endDate, EReportType.ALL);
+        try{
+            var data = response.getBody();
+            assert data != null;
+            Object calcId = ((Map<String, Object>) data).get("calc_id");
+            var resp = new HashMap<>();
+            resp.put("status", "success");
+            resp.put("calc_id", calcId);
+            return rs.build(resp);
+        }
+        catch (RuntimeException e){
+            System.out.println("exception while parsing response from python reports service");
+            var resp = new HashMap<>();
+            resp.put("status", "error");
+            resp.put("message", e);
+            return rs.build(resp);
+        }
     }
     // отчет по заказам книг
     // количество книг на складе

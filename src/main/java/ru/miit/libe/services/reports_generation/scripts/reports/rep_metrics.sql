@@ -134,7 +134,12 @@ from (
     select
         'Читаемость' as metric,
         'Штук' as metric_unit,
-        ROUND(sum(reciepted_books_count)/count(distinct reader)::numeric, 2) as value,
+        CASE WHEN
+            ROUND(sum(reciepted_books_count)/count(distinct reader)::numeric, 2) is NULL
+            then 0
+            else ROUND(sum(reciepted_books_count)/count(distinct reader)::numeric, 2)
+        end as value,
+        --ROUND(sum(reciepted_books_count)/count(distinct reader)::numeric, 2) as value,
         'Среднее число книг, выданных одному читателю за период' as metric_desc
     from $reports_schema_value.rep_readability v 
     where v.calc_id = $calc_id_value
@@ -146,7 +151,11 @@ from (
     select
         'Обращаемость' as metric,
         'Раз' as metric_unit,
-        ROUND(sum(book_distribution_count)/count(distinct book)::numeric, 2) as value,
+        case WHEN
+            ROUND(sum(book_distribution_count)/count(distinct book)::numeric, 2) is NULL
+            then 0
+            else ROUND(sum(book_distribution_count)/count(distinct book)::numeric, 2)
+        end as value,
         'Среднее число книговыдач на единицу фонда' as metric_desc
     from $reports_schema_value.rep_appeal_rate ar
     where ar.calc_id = $calc_id_value

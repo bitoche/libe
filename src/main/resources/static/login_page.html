@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>login page</title>
+</head>
+<body>
+<form method="post" action="http://localhost:8080/auth/code/get">
+    <label>
+        email
+        <input name="email"/>
+    </label>
+    <button type="submit">получить код</button>
+</form>
+
+<form method="post" action="http://localhost:8080/auth/login">
+    <label>
+        email
+        <input name="email"/>
+    </label>
+    <label>
+        password
+        <input name="password"/>
+    </label>
+    <label>
+        entryCode
+        <input name="entryCode"/>
+    </label>
+    <button type="submit">войти</button>
+</form>
+</body>
+</html>

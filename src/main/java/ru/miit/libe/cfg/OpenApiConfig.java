@@ -14,7 +14,9 @@ public class OpenApiConfig {
         return new OpenAPI()
                 .servers(
                         Arrays.asList(
-                                new Server().url("https://bitoche.cloudpub.ru"),
+                                // туннель
+//                                new Server().url("https://bitoche.cloudpub.ru"),
+                                // локальный хост
                                 new Server().url("http://localhost:8080")
                         )
                 );

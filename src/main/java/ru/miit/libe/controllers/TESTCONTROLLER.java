@@ -12,4 +12,9 @@ public class TESTCONTROLLER {
     public String returnToSwagger() {
         return "forward:/index.html";
     }
+
+    @GetMapping("/test/login_page")
+    public String getLoginPage(){
+        return "forward:/login_page.html";
+    }
 }

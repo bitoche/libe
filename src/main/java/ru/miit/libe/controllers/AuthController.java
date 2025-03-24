@@ -5,15 +5,19 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.Nullable;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import ru.miit.libe.dtos.CreateUserRequest;
+import ru.miit.libe.models.AppUserDetails;
 import ru.miit.libe.models.EUserRole;
 import ru.miit.libe.dtos.SAVETYPE;
+import ru.miit.libe.models.User;
 import ru.miit.libe.services.UserService;
 
 import java.sql.Date;
@@ -30,25 +34,14 @@ public class AuthController {
 
     private final UserService userService;
     private final ResponseService rs;
+//    private final AppUserDetails userDetails;
 
-    private org.springframework.security.core.userdetails.UserDetails getUserDetails(){
-        // Получаем объект аутентификации
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        // Получаем principal (обычно это объект UserDetails)
-        Object principal = authentication.getPrincipal();
-
-        // Проверяем, что principal является UserDetails
-        if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
-            return (org.springframework.security.core.userdetails.UserDetails) principal;
-        } else {
-            return null;
-        }
-    }
-
-    public AuthController(UserService userService, ResponseService rs) {
+    public AuthController(UserService userService, ResponseService rs
+//            , AppUserDetails userDetails
+                          ) {
         this.userService = userService;
         this.rs=rs;
+//        this.userDetails = userDetails;
     }
 
     @PostMapping("/register")
@@ -145,7 +138,17 @@ public class AuthController {
     @Operation(summary = "Вход в аккаунт")
     @PostMapping("/login")
     public ResponseEntity<?> login(@NotNull String email, @NotNull String password, @NotNull String entryCode){
-        return rs.build(userService.loginWithOneTimeCode(email, password, entryCode));
+        var response = userService.loginWithOneTimeCode(email, password, entryCode);
+        String token = null;
+        if(response.getStatusCode() == HttpStatus.ACCEPTED){
+            AppUserDetails user = new AppUserDetails(userService.getUser(null, email));
+            token = userService.generateJwtToken(email);
+            UsernamePasswordAuthenticationToken auth =
+                    new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+            SecurityContextHolder.getContext().setAuthentication(auth);
+        }
+//        userDetails.getAuthorities().forEach(auth -> System.out.println(auth.getAuthority()));
+        return token == null ? response : rs.build(token);
     }
 
     // проверка авторизации пользователя

@@ -4,6 +4,7 @@ import io.micrometer.common.lang.Nullable;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/books")
 @Tag(name = "Юзер-контроллер книг // perm:all", description = "Позволяет найти нужную книгу по автору, идентификатору, и т.д.")
 @CrossOrigin({"http://localhost:3000/", "https://bitoche.cloudpub.ru/"})
+@SecurityRequirement(name = "BearerAuth")
 public class BookController {
     @Autowired
     private final IBookRepository bookRepository;

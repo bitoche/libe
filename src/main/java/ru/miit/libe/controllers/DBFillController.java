@@ -1,6 +1,7 @@
 package ru.miit.libe.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ import ru.miit.libe.services.DBFillService;
 @Tag(name = "Заполнение БД тестовыми значениями ")
 @CrossOrigin({"http://localhost:3000/", "https://bitoche.cloudpub.ru/"})
 @AllArgsConstructor
+@SecurityRequirement(name = "BearerAuth")
 public class DBFillController {
     private final DBFillService dbFillService;
     private final ResponseService rs;

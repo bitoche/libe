@@ -8,6 +8,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.lang.Nullable;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -34,6 +37,10 @@ public class UserService {
     private EmailService emailService;
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    private final JWTService jwtService;
+    private final UserDetailsService userDetailsService;
+    private final AuthenticationManager authenticationManager;
 
     @Autowired
     private ReportsService reportsService;
@@ -74,6 +81,7 @@ public class UserService {
                     enteredUser.setRole(EUserRole.AUTHORIZED);
                     userRepository.save(enteredUser);
                     reportsService.addUserToUserRoleAssign(enteredUser, enteredUser.getRole());
+                    verifyCredentials(enteredUser, password);
                     return ResponseEntity.status(200).body(enteredUser);
                 } else {
                     return ResponseEntity.status(302).build();
@@ -105,6 +113,22 @@ public class UserService {
             throw new RuntimeException(e);
         }
     }
+
+    public String generateJwtToken(String email) {
+        return jwtService.generateToken(email);
+    }
+
+    public boolean verifyCredentials(User user, String rawPassowrd) {
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(user.getEmail(), rawPassowrd)
+            );
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     public EntryCode createEntryCode(EntryCode entryCode){
         var user = entryCode.getUser();
         if(user!=null && userRepository.existsByEmail(user.getEmail())){

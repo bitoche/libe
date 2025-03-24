@@ -3,6 +3,7 @@ package ru.miit.libe.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.transaction.Transactional;
 import org.jetbrains.annotations.NotNull;
@@ -29,6 +30,7 @@ import java.util.List;
 @RequestMapping("/librarian")
 @Tag(name = "Управление книгами, и т.п. // perm:librarian")
 @CrossOrigin({"http://localhost:3000/", "https://bitoche.cloudpub.ru/"})
+@SecurityRequirement(name = "BearerAuth")
 public class LibrarianController {
     private final MainBookService mainBookService;
     @Autowired

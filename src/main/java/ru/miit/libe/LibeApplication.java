@@ -61,7 +61,7 @@ class EnvSettings{
 
 @SpringBootApplication
 public class LibeApplication {
-	static EnvVar[] needVars = {
+	static EnvVar[] needVars = { // переменные, которые будут загружены из .env
 			new EnvVar("DB_HOST", "Str"),
 			new EnvVar("DB_PORT", "Int"),
 			new EnvVar("DB_NAME", "Str"),
@@ -71,7 +71,9 @@ public class LibeApplication {
 			new EnvVar("DB_DEBUG", "Str"),
 			new EnvVar("DEBUG", "Str"),
 			new EnvVar("MAIL_USERNAME", "Str"),
-			new EnvVar("MAIL_PASSWORD", "Str")
+			new EnvVar("MAIL_PASSWORD", "Str"),
+			new EnvVar("JWT_SECRET", "Str"),
+			new EnvVar("SECURITY_DEBUG", "Str")
 	};
 	public static void main(String[] args) throws Exception {
 		// подгружаем переменные из окружения

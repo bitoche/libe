@@ -2,6 +2,7 @@ package ru.miit.libe.controllers;
 
 import io.micrometer.common.lang.Nullable;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,7 @@ import ru.miit.libe.services.UserService;
 @Tag(name = "Контроллер для обычного пользователя // perm:all", description = "Позволяет смотреть пользователей и роли")
 @CrossOrigin({"http://localhost:3000/", "https://bitoche.cloudpub.ru/"})
 @AllArgsConstructor
+@SecurityRequirement(name = "BearerAuth")
 public class UserController {
     private final UserService userService;
     private final BorrowService borrowService;

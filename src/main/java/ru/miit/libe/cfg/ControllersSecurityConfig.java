@@ -1,6 +1,4 @@
-package ru.miit.libe.controllers;
-
-import org.apache.commons.lang3.ArrayUtils;
+package ru.miit.libe.cfg;
 
 public class ControllersSecurityConfig {
     public static final String[] LIBRARIAN_ENDPOINTS = {
@@ -12,32 +10,37 @@ public class ControllersSecurityConfig {
             "/reports/**"
     };
     public static final String[] ADMIN_ENDPOINTS = {
-            "/admin/**"
+            "/admin/**" // функции администратора
     };
-    public static final String[] DEACTIVATED_ROLE_ENDPOINTS = {
+    public static final String[] AUTH_ENDPOINTS = {
             "/auth/**" // регистрироваться и авторизоваться
     };
 
-    static String[] activated_only = {
+    public static final String[] ACTIVATED_ROLE_ENDPOINTS = {
             "/books/**", // может просматривать каталог
             "/users/**" // может просматривать пользователей
     };
-    public static final String[] ACTIVATED_ROLE_ENDPOINTS = ArrayUtils.addAll(
-            DEACTIVATED_ROLE_ENDPOINTS, activated_only
-    );
 
-    static String[] student_only = {
+    public static final String[] STUDENT_ENDPOINTS = {
             "/borrows/u/**", // может бронировать книги
             "/notifications/**" // может просматривать уведомления
     };
-    public static final String[] STUDENT_ENDPOINTS =  ArrayUtils.addAll(
-            ACTIVATED_ROLE_ENDPOINTS, student_only
-    );
 
-    static String[] teacher_only = {
+    public static final String[] TEACHER_ENDPOINTS = {
             "/borrows/t/**" // может запрашивать книги
     };
-    public static final String[] TEACHER_ENDPOINTS = ArrayUtils.addAll(
-            STUDENT_ENDPOINTS, teacher_only
-    );
+
+    public static final String[] RESOURCES_ENDPOINTS = { // доступ к статическим ресурсам сервера
+            "/static/**",
+            "/css/**",
+            "/js/**",
+            "/images/**",
+            "/index.html", // странички для удобства
+            "/login_page.html"
+    };
+    public static final String[] SWAGGER_ENDPOINTS = { // доступ к сваггеру проекта
+            "/swagger-ui/**",
+            "/v*/api-docs/**",
+            "/swagger-resources/**"
+    };
 }

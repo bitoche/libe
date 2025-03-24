@@ -1,6 +1,7 @@
 package ru.miit.libe.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -22,6 +23,7 @@ import java.util.Date;
 @Tag(name = "Управление запросами на получение, бронированиями книг и т.п. // perm:librarian/student/teacher")
 @CrossOrigin({"http://localhost:3000/", "https://bitoche.cloudpub.ru/"})
 @AllArgsConstructor
+@SecurityRequirement(name = "BearerAuth")
 public class BorrowController {
     BorrowService borrowService;
     UserService userService;

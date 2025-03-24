@@ -1,5 +1,6 @@
 package ru.miit.libe.controllers;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.annotation.Nullable;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,6 +21,7 @@ import java.sql.Date;
 @RequestMapping("/admin")
 @Tag(name = "Управление ролями, созданием пользователей и т.д. // perm:admin")
 @CrossOrigin({"http://localhost:3000/", "https://bitoche.cloudpub.ru/"})
+@SecurityRequirement(name = "BearerAuth")
 public class AdminController {
     private final UserService userService;
     private final ResponseService rs;

@@ -17,13 +17,12 @@ public class AppUserDetails implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-        var role = user.getRole();
-        if(!(user.getRole() == null)){
-            authorities.add(new SimpleGrantedAuthority(role.name()));
+        if (user.getRole() != null) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
         }
-
         return authorities;
     }
+
 
     @Override
     public String getPassword() {

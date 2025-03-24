@@ -1,6 +1,7 @@
 package ru.miit.libe.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +15,7 @@ import ru.miit.libe.services.NotificationService;
 @Tag(name = "Просмотр уведомлений пользователя, создание уведомлений (как бы сообщений) для пользователя библиотекарем")
 @CrossOrigin({"http://localhost:3000/", "https://bitoche.cloudpub.ru/"})
 @AllArgsConstructor
+@SecurityRequirement(name = "BearerAuth")
 public class NotificationController {
     private final ResponseService rs;
     private final NotificationService notificationService;

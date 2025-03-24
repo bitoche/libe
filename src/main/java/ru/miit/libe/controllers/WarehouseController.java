@@ -1,6 +1,7 @@
 package ru.miit.libe.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,7 @@ import java.util.List;
 @RequestMapping("/warehouse")
 @Tag(name = "Управление выдачей книг, заказами, и т.д. // perm::librarian")
 @CrossOrigin({"http://localhost:3000/", "https://bitoche.cloudpub.ru/"})
+@SecurityRequirement(name = "BearerAuth")
 public class WarehouseController {
     private final WarehouseService warehouseService;
     private final ResponseService rs;

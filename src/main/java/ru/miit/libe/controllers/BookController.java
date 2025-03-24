@@ -45,19 +45,12 @@ public class BookController {
     }
 
     @GetMapping("/search/name")
-//    @ApiResponses(value = {
-//            @ApiResponse(responseCode = "200", description = "Книги успешно найдены"),
-//            @ApiResponse(responseCode = "201", description = "Запрос выполнен, книг не найдено")
-//    })
+
     public ResponseEntity<?> getBooksByName(@RequestParam String namePart){
         return rs.build(bookRepository.findAllByBookNameContains(namePart));
     }
 
     @GetMapping("/search/author-identifier")
-//    @ApiResponses(value = {
-//            @ApiResponse(responseCode = "200", description = "Книги успешно найдены"),
-//            @ApiResponse(responseCode = "201", description = "Запрос выполнен, книг не найдено")
-//    })
     @Operation(summary = "Найти книги по идентификатору автора")
     public ResponseEntity<?> getBooksByAuthor(@RequestParam String authorIdentifier){
         return rs.build(bookRepository.findAllByAuthors_IdentifierIn(Collections.singleton(authorIdentifier))) ;
@@ -78,37 +71,21 @@ public class BookController {
         return rs.build(resp);
     }
     @GetMapping("/search/book-identifier")
-//    @ApiResponses(value = {
-//            @ApiResponse(responseCode = "200", description = "Книга успешно найдена"),
-//            @ApiResponse(responseCode = "201", description = "Запрос выполнен, книг не найдено")
-//    })
     public ResponseEntity<?> getBooksByIdentifier(@RequestParam String fullIdentifier){
         return rs.build(bookRepository.findByIdentifier(fullIdentifier));
     }
 
     @GetMapping("/search/genre")
-//    @ApiResponses(value = {
-//            @ApiResponse(responseCode = "200", description = "Книга успешно найдена"),
-//            @ApiResponse(responseCode = "201", description = "Запрос выполнен, книг не найдено")
-//    })
     public ResponseEntity<?> getBooksByGenre(@RequestParam String genreName){
         return rs.build(bookRepository.findAllByGenres_GenreNameIn(Collections.singleton(genreName))) ;
     }
 
-//    @ApiResponses(value = {
-//            @ApiResponse(responseCode = "200", description = "Успешно получен список книг"),
-//            @ApiResponse(responseCode = "201", description = "Не найдено ни одной книги")
-//    })
     @Operation(summary = "Позволяет получить список книг из БД")
     @GetMapping("/")
     public ResponseEntity<?> getAllBooks(@Nullable boolean showOnlyCount){
         var r = mainBookService.getAllBooks();
         return showOnlyCount ? rs.build((long) r.size()) : rs.build(r);
     }
-//    @ApiResponses(value = {
-//            @ApiResponse(responseCode = "200", description = "Успешное получен список книг"),
-//            @ApiResponse(responseCode = "201", description = "Не найдено ни одной книги")
-//    })
     @Operation(summary = "Позволяет получить все книги, подходящие под запрос.",
     description = "Ищет по частям запроса подходящие книги по авторам, описанию, названию, и т.д. Может быть улучшен")
     @GetMapping("/search/request")

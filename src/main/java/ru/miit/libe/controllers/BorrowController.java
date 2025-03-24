@@ -14,6 +14,7 @@ import ru.miit.libe.models.RequestBooks;
 import ru.miit.libe.services.BorrowService;
 import ru.miit.libe.services.UserService;
 
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.Date;
 
@@ -82,7 +83,7 @@ public class BorrowController {
     // пользователь - должен быть
     @Operation(summary = "Получить МОИ брони")
     @GetMapping("/u/borrows/get/{userId}")
-    public ResponseEntity<?> getMyBorrows(@PathVariable long userId){
+    public ResponseEntity<?> getMyBorrows(@PathVariable long userId, Principal principal){
         //todo spring security проверка на авторизовавшегося пользователя - должен быть тот же, иначе forbidden
         return rs.build(borrowService.findBorrowByUser(userId));
     }

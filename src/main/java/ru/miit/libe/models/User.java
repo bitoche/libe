@@ -40,7 +40,4 @@ public class User {
     @Nullable
     @ToString.Exclude
     Boolean isActive = true; // чтобы при создании записи было сразу true
-//    @Nullable
-//    EUserAccountStatus userAccountStatus;
-    //todo доделать логику, обновить БД под новое поле
 }

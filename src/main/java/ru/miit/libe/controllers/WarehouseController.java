@@ -116,11 +116,7 @@ public class WarehouseController {
     @Operation(summary = "Заказать книги (должна быть привязана логика заказа у поставщика)")
     @PostMapping("/orders/create")
     public ResponseEntity<?> orderBooks(@RequestBody OrderBooksRequest obr
-                                        //@RequestParam Date expectedArrivalDate,
-                                        //@RequestParam long orderedLibrarianId,
-                                        //@RequestBody List<InOrderBook> orderedBooks,
-                                        //@RequestParam @Nullable String comment
-            /*@RequestBody OrderingBooks orderingBooks*/){
+    ){
         // проверка на админа
         if(userService.checkUserNotExists(null, obr.getOrderedLibrarianId())){
             return ResponseEntity.badRequest().body("user "+obr.getOrderedLibrarianId()+" not found");

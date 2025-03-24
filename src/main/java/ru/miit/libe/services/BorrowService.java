@@ -249,7 +249,7 @@ public class BorrowService {
     public RequestBooks saveNewRequestBooks(RequestBooks requestBooks) {
         var inOrderBooks = requestBooks.getOrderedBooks();
         inOrderBooks.forEach(b -> inOrderBookRepository.save(b));
-        // рассылка всем библиотекарям о получении нового запроса на книги. todo отключено
+        // рассылка всем библиотекарям о получении нового запроса на книги. отключено
 //        String message = "Получен новый запрос на заказ книг от " + requestBooks.getRequestedUser().getEmail() + ".\n" +
 //                "Содержание: " + inOrderBooks;
 //        for(User u : userService.getAll()){
@@ -270,8 +270,6 @@ public class BorrowService {
         var oldInOrderBooks = requestBooksRepository.findById(requestBooks.getRequestId()).get().getOrderedBooks();
         oldInOrderBooks.forEach(b -> inOrderBookRepository.delete(b));
         newInOrderBooks.forEach(b -> inOrderBookRepository.save(b));
-        //todo notification
-
         return requestBooksRepository.save(requestBooks);
     }
 

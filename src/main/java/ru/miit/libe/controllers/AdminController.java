@@ -51,17 +51,12 @@ public class AdminController {
 
     @Operation(summary = "Изменить данные пользователя (пароль хешируется после выполнения)")
     @PutMapping("/users/change")
-    //@ApiResponse(responseCode = "444", description = "Пользователь не найден (UserService)")
     public ResponseEntity<?> updateUser(@RequestBody
                                         UpdateUserRequest updatedUser){
         return rs.build(userService.update(updatedUser));
     }
 
     @Operation(summary = "Удаляет пользователя по ID (без подтверждения)")
-//    @ApiResponses(value = {
-//            @ApiResponse(responseCode = "404", description = "Пользователь не найден"),
-//            @ApiResponse(responseCode = "200", description = "Пользователь удален"),
-//    })
     @DeleteMapping("/users/delete")
     public ResponseEntity<?> deleteUserById(@RequestParam Long userId){
         return rs.build(userService.deleteUserById(userId));

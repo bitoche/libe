@@ -53,33 +53,6 @@ public class LibrarianController {
         this.publishingHouseRepository = publishingHouseRepository;
     }
 
-    @Operation(summary = "Позволяет получить список статусов книг из БД")
-    @GetMapping("/statuses")
-    public ResponseEntity<?> getAllBookStatuses(){
-        return ResponseEntity.ok(mainBookService.getAllBookStatuses());
-    }
-
-    @Operation(summary = "Позволяет получить список жанров книг из БД")
-    @GetMapping("/genres")
-    public ResponseEntity<?> getAllBookGenres(){
-        return ResponseEntity.ok(mainBookService.getAllBookGenres());
-    }
-    @Operation(summary = "Позволяет получить всех издателей из БД")
-    @GetMapping("/publishing-houses")
-    public ResponseEntity<?> getPublishingHouses(){
-        return ResponseEntity.ok(mainBookService.getAllPublishingHouses());
-    }
-    @Operation(summary = "Позволяет получить всех авторов из БД")
-    @GetMapping("/authors")
-    public ResponseEntity<?> getBookAuthors(){
-        return ResponseEntity.ok(mainBookService.getAllBookAuthors());
-    }
-    @Operation(summary = "Позволяет получить все языки из БД")
-    @GetMapping("/languages")
-    public ResponseEntity<?> getBookLanguages(){
-        return ResponseEntity.ok(mainBookService.getAllBookLanguages());
-    }
-
     //add
     @Operation(summary = "Добавить новую книгу в БД")
     @PostMapping(value = "/books/create")

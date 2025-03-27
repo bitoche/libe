@@ -121,4 +121,10 @@ public class BookController {
         return ResponseEntity.ok(mainBookService.getAllBookLanguages());
     }
 
+    @Operation(summary = "Получить книгу по ID")
+    @GetMapping("/{bookId}")
+    public ResponseEntity<?> getBookById(@PathVariable Long bookId){
+        return rs.build(mainBookService.getBookById(bookId));
+    }
+
 }

@@ -96,6 +96,9 @@ public class MainBookService {
         reportsService.addBookToBookStatusAssign(book, book.getBookStatus());
         return r;
     }
+    public Book getBookById(@NotNull Long bookId){
+        return bookRepository.getByBookId(bookId).orElse(null);
+    }
     public BookGenre addBookGenre(@NotNull BookGenre bookGenre){
         if (!bookGenreRepository.existsByGenreName(bookGenre.getGenreName())){
             return bookGenreRepository.save(bookGenre);

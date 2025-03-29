@@ -16,6 +16,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import io.github.cdimascio.dotenv.Dotenv;
+
+import java.util.Objects;
 
 @Configuration
 @EnableWebSecurity
@@ -47,6 +50,9 @@ public class SecurityConfig {
     final String[] RESOURCES_ENDPOINTS = ControllersSecurityConfig.RESOURCES_ENDPOINTS;
     final String[] SWAGGER_ENDPOINTS = ControllersSecurityConfig.SWAGGER_ENDPOINTS;
 
+    Dotenv dotenv = Dotenv.load();
+    Boolean isDemo = Objects.requireNonNull(dotenv.get("DEMONSTRATION")).equals("1");
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -62,6 +68,9 @@ public class SecurityConfig {
                             .permitAll()
                         .requestMatchers(AUTH_ENDPOINTS)
                             .permitAll()
+
+                        .requestMatchers(isDemo ? "/**" : "/demo").hasAuthority("ROLE_DEMO") // Полный доступ для DEMO
+
                         .requestMatchers(ADMIN_ENDPOINTS).hasAuthority("ROLE_ADMIN")
                         .requestMatchers(LIBRARIAN_ENDPOINTS).hasAuthority("ROLE_LIBRARIAN")
                         .requestMatchers(TEACHER_ENDPOINTS).hasAuthority("ROLE_TEACHER")

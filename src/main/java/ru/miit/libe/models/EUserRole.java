@@ -8,7 +8,9 @@ public enum EUserRole implements GrantedAuthority {
     STUDENT ("Студент"),
     TEACHER ("Преподаватель"),
     LIBRARIAN ("Библиотекарь"),
-    ADMIN ("Администратор");
+    ADMIN ("Администратор"),
+    // todo delete
+    DEMO ("Роль для демонстрации возможностей приложения");
 
     private String title;
     EUserRole(String title){

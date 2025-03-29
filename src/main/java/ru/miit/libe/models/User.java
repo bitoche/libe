@@ -35,6 +35,9 @@ public class User {
     @JsonIgnore
     String password;
     EUserRole role;
+    public String getRoleTitle(){
+        return role.getTitle();
+    }
     LocalDateTime registerDttm;
 
     @Nullable

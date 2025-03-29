@@ -10,6 +10,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.lang.Nullable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -291,9 +292,13 @@ public class UserService {
         // codes:
         // 1 - ok,
         // 2 - entry code dont exists,
-        // 3 - entry code expired
+        // 3 - entry code expired,
+        // 4 - entry code not equals
         EntryCode entryCode = entryCodeRepository.findByUserAndCode(user, code);
         if (entryCode == null){
+            if (entryCodeRepository.findByUser_UserId(user.getUserId()).isPresent()){
+                return "entry code not equals";
+            }
             return "entry code doesn't exists";
         }
         if (entryCode.getExpireDateTime().isBefore(LocalDateTime.now())){
@@ -330,5 +335,20 @@ public class UserService {
 
         // Возвращаем успешный ответ
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(user);
+    }
+
+
+    public Long getIdByEmail(String email){
+        return Objects.requireNonNull(userRepository.findAppUserByEmail(email).orElse(null)).getUserId();
+    }
+    public String getEmailById(Long id){
+        return Objects.requireNonNull(userRepository.findById(id).orElse(null)).getEmail();
+    }
+
+    public boolean isMe(String email){
+        return Objects.equals(SecurityContextHolder.getContext().getAuthentication().getName(), email);
+    }
+    public boolean isMe(Long userId){
+        return Objects.equals(getIdByEmail(SecurityContextHolder.getContext().getAuthentication().getName()), userId);
     }
 }

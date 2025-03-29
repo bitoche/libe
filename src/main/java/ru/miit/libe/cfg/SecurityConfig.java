@@ -69,24 +69,27 @@ public class SecurityConfig {
                         .requestMatchers(AUTH_ENDPOINTS)
                             .permitAll()
 
-                        .requestMatchers(isDemo ? "/**" : "/demo").hasAuthority("ROLE_DEMO") // Полный доступ для DEMO
+                        //.requestMatchers(isDemo ? "/**" : "/demo").hasAuthority("ROLE_DEMO") // Полный доступ для DEMO
 
-                        .requestMatchers(ADMIN_ENDPOINTS).hasAuthority("ROLE_ADMIN")
-                        .requestMatchers(LIBRARIAN_ENDPOINTS).hasAuthority("ROLE_LIBRARIAN")
-                        .requestMatchers(TEACHER_ENDPOINTS).hasAuthority("ROLE_TEACHER")
+                        .requestMatchers(ADMIN_ENDPOINTS).hasAnyAuthority("ROLE_ADMIN"
+                                , isDemo ? "ROLE_DEMO" : null)
+                        .requestMatchers(LIBRARIAN_ENDPOINTS).hasAnyAuthority("ROLE_LIBRARIAN"
+                                , isDemo ? "ROLE_DEMO" : null)
+                        .requestMatchers(TEACHER_ENDPOINTS).hasAnyAuthority("ROLE_TEACHER"
+                                , isDemo ? "ROLE_DEMO" : null)
                         .requestMatchers(STUDENT_ENDPOINTS).hasAnyAuthority(
                                 "ROLE_STUDENT",
                                 "ROLE_TEACHER",
                                 "ROLE_LIBRARIAN",
                                 "ROLE_ADMIN"
-                        )
+                                , isDemo ? "ROLE_DEMO" : null)
                         .requestMatchers(ACTIVATED_ROLE_ENDPOINTS).hasAnyAuthority(
                                 "ROLE_AUTHORIZED",
                                 "ROLE_STUDENT",
                                 "ROLE_TEACHER",
                                 "ROLE_LIBRARIAN",
                                 "ROLE_ADMIN"
-                        )
+                                , isDemo ? "ROLE_DEMO" : null)
                         .anyRequest()
                             .denyAll()
                 )

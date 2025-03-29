@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -83,8 +84,11 @@ public class BorrowController {
     // пользователь - должен быть
     @Operation(summary = "Получить МОИ брони")
     @GetMapping("/u/borrows/get/{userId}")
-    public ResponseEntity<?> getMyBorrows(@PathVariable long userId, Principal principal){
-        //todo spring security проверка на авторизовавшегося пользователя - должен быть тот же, иначе forbidden
+    public ResponseEntity<?> getMyBorrows(@PathVariable long userId){
+        // spring security проверка на авторизовавшегося пользователя - должен быть тот же, иначе forbidden
+        if (!userService.isMe(userId)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Cant get access to %s borrows".formatted(userId));
+        }
         return rs.build(borrowService.findBorrowByUser(userId));
     }
 
@@ -104,14 +108,20 @@ public class BorrowController {
     @Operation(summary = "Получить все МОИ запросы книг")
     @GetMapping("/t/requests/user/{userId}")
     public ResponseEntity<?> getMyBooksRequests(@PathVariable long userId){
-        //todo spring security проверка на авторизовавшегося пользователя - должен быть тот же, иначе forbidden
+        // spring security проверка на авторизовавшегося пользователя - должен быть тот же, иначе forbidden
+        if (!userService.isMe(userId)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Cant get access to %s requests".formatted(userId));
+        }
         return rs.build(borrowService.getRequestBooksByUserId(userId));
     }
     // запрос книг perm:teacher - only authenticated
     @Operation(summary = "Создать запрос на книги")
     @PostMapping("/t/requests/create/{userId}")
     public ResponseEntity<?> createBookRequest(@PathVariable long userId, @RequestBody CreateRequestBooksRequest cbr){
-        //todo spring security проверка на авторизовавшегося пользователя - должен быть тот же, иначе forbidden
+        //spring security проверка на авторизовавшегося пользователя - должен быть тот же, иначе forbidden
+        if (!userService.isMe(userId)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Cant get access to create request by %s".formatted(userId));
+        }
         if(userService.existsById(userId)){
             RequestBooks requestBooks = new RequestBooks();
             requestBooks.setOrderedBooks(cbr.getOrderedBooks());
@@ -132,7 +142,10 @@ public class BorrowController {
     @Operation(summary = "Изменить МОЙ запрос на книги")
     @PostMapping("/t/requests/change/{userId}/{requestId}")
     public ResponseEntity<?> changeRequest(@PathVariable long userId, @PathVariable long requestId, @RequestBody CreateRequestBooksRequest createRequestBooksRequest){
-        //todo spring security проверка на авторизовавшегося пользователя - должен быть тот же, иначе forbidden
+        //spring security проверка на авторизовавшегося пользователя - должен быть тот же, иначе forbidden
+        if (!userService.isMe(userId)){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Cant get access to change request by %s".formatted(userId));
+        }
         if(userService.existsById(userId)){
             var r = borrowService.getRequestBooksById(requestId);
             if(r!=null){

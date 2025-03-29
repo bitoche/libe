@@ -35,7 +35,7 @@ public class EmailService {
             javaMailSender.send(message);
         }
         else {
-            System.out.println("\t\t*send message to "+to+"*\n\t\tcontent:\n\t\t"+htmlContent);
+            System.out.println("\t\t*send message to "+to+"*\n\t\tcontent:\n\t\t"+htmlContent.replaceAll("<[^>]*>", " "));
         }
     }
 }

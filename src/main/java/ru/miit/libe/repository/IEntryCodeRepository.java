@@ -7,6 +7,8 @@ import org.springframework.stereotype.Repository;
 import ru.miit.libe.models.EntryCode;
 import ru.miit.libe.models.User;
 
+import java.util.Optional;
+
 @Repository
 public interface IEntryCodeRepository extends JpaRepository<EntryCode, Long> {
     EntryCode getEntryCodeByUser_UserId(Long userId);
@@ -15,4 +17,5 @@ public interface IEntryCodeRepository extends JpaRepository<EntryCode, Long> {
     EntryCode findByUserAndCode(User user, String code);
 
     void deleteByUser(User user);
+    Optional<EntryCode> findByUser_UserId(Long userId);
 }
